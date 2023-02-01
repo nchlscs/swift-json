@@ -63,9 +63,7 @@ public extension JSON {
 	}
 
 	init(_ string: String, options: JSONSerialization.ReadingOptions = []) throws {
-		guard let data = string.data(using: .utf8) else {
-			throw Self.dataCorruptedError(keys: [])
-		}
+		let data = Data(string.utf8)
 		try self.init(data, options: options)
 	}
 
@@ -118,16 +116,6 @@ private extension JSON {
 		var debugDescription: String {
 			stringValue
 		}
-	}
-
-	static func dataCorruptedError(
-		keys: [_CodingKey]
-	) -> DecodingError {
-
-		.dataCorrupted(.init(
-			codingPath: keys,
-			debugDescription: "The given data was not valid JSON."
-		))
 	}
 
 	static func typeMismatchError<T>(
