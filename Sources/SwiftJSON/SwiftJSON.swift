@@ -34,7 +34,11 @@ public struct JSON {
 			return .init(result: array[index].result, keys: keys + [key])
 		}
 
-		let error = Self.keyNotFoundError(key: key, keys: keys)
+		let error = DecodingError.keyNotFound(key, .init(
+			codingPath: keys,
+			debugDescription: "No value associated with key '\(key)'."
+		))
+
 		return .init(result: .failure(error), keys: keys + [key])
 	}
 
@@ -51,7 +55,10 @@ public struct JSON {
 			return value
 		}
 
-		throw Self.typeMismatchError(value: value, keys: keys, expectedType: T.self)
+		throw DecodingError.typeMismatch(T.self, .init(
+			codingPath: keys,
+			debugDescription: "Expected \(T.self) value but found \(Swift.type(of: value)) instead."
+		))
 	}
 }
 
@@ -116,28 +123,5 @@ private extension JSON {
 		var debugDescription: String {
 			stringValue
 		}
-	}
-
-	static func typeMismatchError<T>(
-		value: Any,
-		keys: [_CodingKey],
-		expectedType: T.Type
-	) -> DecodingError {
-
-		.typeMismatch(T.self, .init(
-			codingPath: keys,
-			debugDescription: "Expected \(expectedType) value but found \(type(of: value)) instead."
-		))
-	}
-
-	static func keyNotFoundError(
-		key: _CodingKey,
-		keys: [_CodingKey]
-	) -> DecodingError {
-
-		.keyNotFound(key, .init(
-			codingPath: keys,
-			debugDescription: "No value associated with key '\(key)'."
-		))
 	}
 }
