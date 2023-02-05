@@ -1,8 +1,8 @@
-# SwiftJSON
+# Swift JSON
 
-SwiftJSON is a syntactic sugar wrapper around [`JSONSerialization`](https://developer.apple.com/documentation/foundation/jsonserialization) that uses [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) features to unwrap values.
+JSON is a syntactic sugar wrapper around [`JSONSerialization`](https://developer.apple.com/documentation/foundation/jsonserialization) that uses [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) features to unwrap values.
 
-- [SwiftJSON](#swiftjson)
+- [JSON](#json)
   - [Motivation](#motivation)
   - [Usage](#usage)
       - [Plain value](#plain-value)
@@ -61,7 +61,7 @@ let longitude = try JSONDecoder()
 print(longitude)
 ```
 
-With SwiftJSON it would be:
+With JSON it would be:
 
 ```swift
 let longitude = try JSON(data)
@@ -221,4 +221,4 @@ let value = try JSON(data)
 
 ### Manually
 
-Download and drag `Sources/SwiftJSON/SwiftJSON.swift` file into your project.
+Download and drag `Sources/JSON/JSON.swift` file into your project.

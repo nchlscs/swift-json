@@ -5,9 +5,9 @@
  */
 
 import XCTest
-@testable import SwiftJSON
+@testable import JSON
 
-final class SwiftJSONTests: XCTestCase {
+final class JSONTests: XCTestCase {
 
 	func testPlainValue() throws {
 		let data = """

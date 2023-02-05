@@ -5,21 +5,21 @@
 import PackageDescription
 
 let package = Package(
-	name: "SwiftJSON",
+	name: "swift-json",
 	products: [
 		.library(
-			name: "SwiftJSON",
-			targets: ["SwiftJSON"]
+			name: "JSON",
+			targets: ["JSON"]
 		)
 	],
 	targets: [
 		.target(
-			name: "SwiftJSON",
+			name: "JSON",
 			dependencies: []
 		),
 		.testTarget(
-			name: "SwiftJSONTests",
-			dependencies: ["SwiftJSON"]
+			name: "JSONTests",
+			dependencies: ["JSON"]
 		)
 	]
 )
