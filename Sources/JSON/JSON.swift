@@ -11,9 +11,9 @@ import Foundation
 public struct JSON {
 
 	private let result: Result<Value, Error>
-	private let keys: [_CodingKey]
+	private let keys: [CodingKey]
 
-	private func lookup(key: _CodingKey) -> JSON {
+	private func lookup(key: CodingKey) -> JSON {
 
 		let value: Value
 
@@ -99,32 +99,5 @@ public extension JSON {
 
 	func dynamicallyCall(withArguments arguments: [Any] = []) throws -> Any {
 		try result.get()
-	}
-}
-
-private extension JSON {
-
-	struct _CodingKey: CodingKey {
-
-		let stringValue: String
-		let intValue: Int?
-
-		init(stringValue: String) {
-			self.stringValue = stringValue
-			self.intValue = nil
-		}
-
-		init(intValue: Int) {
-			self.stringValue = "Index \(intValue)"
-			self.intValue = intValue
-		}
-
-		var description: String {
-			stringValue
-		}
-
-		var debugDescription: String {
-			stringValue
-		}
 	}
 }
