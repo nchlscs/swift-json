@@ -10,8 +10,8 @@ import Foundation
 @dynamicMemberLookup
 public struct JSON {
 
-	private let result: Result<Value, Error>
-	private let keys: [CodingKey]
+	let result: Result<Value, Error>
+	let keys: [CodingKey]
 
 	private func lookup(key: CodingKey) -> JSON {
 
@@ -44,23 +44,17 @@ public struct JSON {
 		return .init(result: .failure(error), keys: keys + [key])
 	}
 
-	private func unwrap<T>(as type: T.Type) throws -> T {
+	private func unwrap<T: ExpressibleByJSON>(as type: T.Type) throws -> T {
 
-		let value = try result.get()
-
-		if case let .array(array) = value,
-		   let array = array
-		   	.map({ JSON(result: .success($0), keys: keys) }) as? T {
-			return array
-		}
-
-		if let value = value.rawValue as? T {
+		if let value = try T(self) {
 			return value
 		}
 
+		let value = try result.get().rawValue
+
 		throw DecodingError.typeMismatch(T.self, .init(
 			codingPath: keys,
-			debugDescription: "Expected \(T.self) value but found \(Swift.type(of: value.rawValue)) instead."
+			debugDescription: "Expected \(T.self) value but found \(Swift.type(of: value)) instead."
 		))
 	}
 }
@@ -89,15 +83,9 @@ public extension JSON {
 		lookup(key: .init(intValue: index))
 	}
 
-	func dynamicallyCall<T>(withArguments arguments: [T.Type]) throws -> T {
+	func dynamicallyCall<T: ExpressibleByJSON>(
+		withArguments arguments: [T.Type]
+	) throws -> T {
 		try unwrap(as: T.self)
-	}
-
-	func dynamicallyCall<T>(withArguments arguments: [T?.Type]) throws -> T? {
-		try? unwrap(as: T.self)
-	}
-
-	func dynamicallyCall(withArguments arguments: [Any] = []) throws -> Any {
-		try result.get()
 	}
 }

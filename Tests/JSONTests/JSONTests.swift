@@ -34,10 +34,10 @@ final class JSONTests: XCTestCase {
 	func testDoubleValue() throws {
 		let data = """
 				{
-					"result": 3.14159
+					"value": 3.14159
 				}
 			"""
-		let value = try JSON(data).result(Double.self)
+		let value = try JSON(data).value(Double.self)
 		XCTAssertEqual(value, 3.14159)
 	}
 
@@ -47,7 +47,7 @@ final class JSONTests: XCTestCase {
 					"balance": 20544.84
 				}
 			"""
-		let value = try JSON(data).balance(NSNumber.self).decimalValue
+		let value = try JSON(data).balance(Decimal.self)
 		XCTAssertEqual(value, Decimal(string: "20544.84"))
 	}
 
