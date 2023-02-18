@@ -1,4 +1,4 @@
-/**
+/*
  SwiftJSON
  Nikolay Davydov
  MIT license
@@ -10,28 +10,30 @@ import Foundation
 @dynamicMemberLookup
 public struct JSON {
 
-	private let result: Result<Any, Error>
+	private let result: Result<Value, Error>
 	private let keys: [_CodingKey]
 
-	private func lookup<T>(key: _CodingKey, as type: T.Type) -> JSON {
+	private func lookup(key: _CodingKey) -> JSON {
 
-		let unwrapped: T
+		let value: Value
 
 		do {
-			unwrapped = try unwrap(as: type)
+			value = try result.get()
 		} catch {
 			return .init(result: .failure(error), keys: keys + [key])
 		}
 
-		if let dict = unwrapped as? NSDictionary,
-		   let value = dict[key.stringValue] {
-			return .init(result: .success(value), keys: keys + [key])
-		}
-
-		if let array = unwrapped as? [JSON],
-		   let index = key.intValue,
-		   array.indices ~= index {
-			return .init(result: array[index].result, keys: keys + [key])
+		switch value {
+		case let .dictionary(dictionary):
+			if let value = dictionary[key.stringValue] {
+				return .init(result: .success(value), keys: keys + [key])
+			}
+		case let .array(array):
+			if let index = key.intValue, array.indices.contains(index) {
+				return .init(result: .success(array[index]), keys: keys + [key])
+			}
+		default:
+			break
 		}
 
 		let error = DecodingError.keyNotFound(key, .init(
@@ -46,18 +48,19 @@ public struct JSON {
 
 		let value = try result.get()
 
-		if let array = value as? NSArray,
-		   let array = array.map({ JSON(result: .success($0), keys: keys) }) as? T {
+		if case let .array(array) = value,
+		   let array = array
+		   	.map({ JSON(result: .success($0), keys: keys) }) as? T {
 			return array
 		}
 
-		if let value = value as? T {
+		if let value = value.rawValue as? T {
 			return value
 		}
 
 		throw DecodingError.typeMismatch(T.self, .init(
 			codingPath: keys,
-			debugDescription: "Expected \(T.self) value but found \(Swift.type(of: value)) instead."
+			debugDescription: "Expected \(T.self) value but found \(Swift.type(of: value.rawValue)) instead."
 		))
 	}
 }
@@ -65,8 +68,8 @@ public struct JSON {
 public extension JSON {
 
 	init(_ data: Data, options: JSONSerialization.ReadingOptions = []) throws {
-		let value = try JSONSerialization.jsonObject(with: data, options: options)
-		self.init(result: .success(value), keys: [])
+		let object = try JSONSerialization.jsonObject(with: data, options: options)
+		self.init(result: .success(.init(rawValue: object)), keys: [])
 	}
 
 	init(_ string: String, options: JSONSerialization.ReadingOptions = []) throws {
@@ -75,7 +78,7 @@ public extension JSON {
 	}
 
 	subscript(dynamicMember key: String) -> JSON {
-		lookup(key: .init(stringValue: key), as: NSDictionary.self)
+		lookup(key: .init(stringValue: key))
 	}
 
 	subscript(key: String) -> JSON {
@@ -83,7 +86,7 @@ public extension JSON {
 	}
 
 	subscript(index: Int) -> JSON {
-		lookup(key: .init(intValue: index), as: [JSON].self)
+		lookup(key: .init(intValue: index))
 	}
 
 	func dynamicallyCall<T>(withArguments arguments: [T.Type]) throws -> T {

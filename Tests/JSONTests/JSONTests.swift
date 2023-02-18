@@ -1,4 +1,4 @@
-/**
+/*
  SwiftJSON
  Nikolay Davydov
  MIT license
