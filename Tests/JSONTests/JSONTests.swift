@@ -9,60 +9,159 @@ import XCTest
 
 final class JSONTests: XCTestCase {
 
-	func testPlainValue() throws {
+	func testString() throws {
 		let data = """
-				{
-					"name": "Anna"
-				}
+			{
+				"string": "Anna",
+				"dict": { "string": "1234" },
+				"int": 1234,
+			}
 			"""
-		let value = try JSON(data).name(String.self)
-		XCTAssertEqual(value, "Anna")
+		let json = try JSON(data)
+
+		XCTAssertEqual(try json.string(String.self), "Anna")
+		XCTAssertEqual(try json.dict.string(String.self), "1234")
+		XCTAssertEqual(try json["dict"]["string"](String.self), "1234")
+		XCTAssertThrowsError(try json.int(String.self))
+		XCTAssertThrowsError(try json.dict.value.string(String.self))
+		XCTAssertThrowsError(try json.dict.string.value(String.self))
 	}
 
-	func testNestedValue() throws {
+	func testInt() throws {
 		let data = """
-				{
-					"name": {
-						"first_name": "Anna"
-					}
-				}
+			{
+				"int": 123,
+				"string": "123",
+				"negative": -123,
+				"double": 123.45
+			}
 			"""
-		let value = try JSON(data).name.first_name(String.self)
-		XCTAssertEqual(value, "Anna")
+		let json = try JSON(data)
+
+		XCTAssertEqual(try json.int(Int.self), 123)
+		XCTAssertEqual(try json.string(Int.self), 123)
+		XCTAssertEqual(try json.negative(Int.self), -123)
+		XCTAssertThrowsError(try json.double(Int.self))
 	}
 
-	func testDoubleValue() throws {
+	func testUInt() throws {
 		let data = """
-				{
-					"value": 3.14159
-				}
+			{
+				"int": 123,
+				"string": "123",
+				"negative": -123,
+				"double": 123.45
+			}
 			"""
-		let value = try JSON(data).value(Double.self)
-		XCTAssertEqual(value, 3.14159)
+		let json = try JSON(data)
+
+		XCTAssertEqual(try json.int(UInt.self), 123)
+		XCTAssertEqual(try json.string(UInt.self), 123)
+		XCTAssertThrowsError(try json.negative(UInt.self))
+		XCTAssertThrowsError(try json.double(UInt.self))
 	}
 
-	func testDecimalValue() throws {
+	func testDouble() throws {
 		let data = """
-				{
-					"balance": 20544.84
-				}
+			{
+				"int": 1234,
+				"double": 1234.56,
+				"string": "1234.56"
+			}
 			"""
-		let value = try JSON(data).balance(Decimal.self)
-		XCTAssertEqual(value, Decimal(string: "20544.84"))
+		let json = try JSON(data)
+
+		XCTAssertEqual(try json.int(Double.self), 1234.0)
+		XCTAssertEqual(try json.double(Double.self), 1234.56)
+		XCTAssertEqual(try json.string(Double.self), 1234.56)
 	}
 
-	func testPlainArray() throws {
+	func testBool() throws {
 		let data = """
-				[
-					100,
-					101
-				]
+			{
+				"bool": true,
+				"string": "false",
+				"int": 1
+			}
 			"""
-		let value = try JSON(data)([Int].self)
-		XCTAssertEqual(value, [100, 101])
+		let json = try JSON(data)
+
+		XCTAssertEqual(try json.bool(Bool.self), true)
+		XCTAssertEqual(try json.string(Bool.self), false)
+		XCTAssertThrowsError(try json.int(Bool.self))
 	}
 
-	func testNestedArray() throws {
+	func testDecimal() throws {
+		let data = """
+			{
+			    "int": 1234,
+			    "double": 1234.56,
+			    "string": "1234.56"
+			}
+			"""
+		let json = try JSON(data)
+
+		XCTAssertEqual(try json.int(Decimal.self), Decimal(string: "1234.0"))
+		XCTAssertEqual(try json.double(Decimal.self), Decimal(string: "1234.56"))
+		XCTAssertEqual(try json.string(Decimal.self), Decimal(string: "1234.56"))
+	}
+
+	func testURL() throws {
+		let data = """
+			{
+				"string": "https://example.com",
+				"dict": { "string": "^><?//" }
+			}
+			"""
+		let json = try JSON(data)
+
+		XCTAssertEqual(try json.string(URL.self), URL(string: "https://example.com"))
+		XCTAssertThrowsError(try json.dict.string(URL.self))
+	}
+
+	func testArray() throws {
+		let data = """
+			[
+				[1, 2],
+				[3, 4]
+			]
+			"""
+		let json = try JSON(data)
+
+		XCTAssertEqual(try json([JSON].self).count, 2)
+		XCTAssertEqual(try json[0]([Int].self), [1, 2])
+		XCTAssertEqual(try json[1]([Int].self), [3, 4])
+		XCTAssertThrowsError(try json[2]([Int].self))
+	}
+
+	func testDictionary() throws {
+		let data = """
+			{
+				"int": 1234,
+				"double": 1234.56,
+				"string": "1234.56"
+			}
+			"""
+		let json = try JSON(data)
+
+		XCTAssertEqual(try json([String: JSON].self).count, 3)
+		XCTAssertEqual(try json([String: JSON].self)["int"]!(Int.self), 1234)
+	}
+
+	func testOptional() throws {
+		let data = """
+			[
+				["1", "2", null],
+				[3, null, 4]
+			]
+			"""
+		let json = try JSON(data)
+
+		XCTAssertEqual(try json[0]([String?].self), ["1", "2", nil])
+		XCTAssertEqual(try json[1]([Int?].self), [3, nil, 4])
+	}
+
+	func testExpressibleByJSON() throws {
 		let data = """
 			{
 				"balances": [
@@ -77,58 +176,27 @@ final class JSONTests: XCTestCase {
 				]
 			}
 			"""
-		let jsons = try JSON(data).balances([JSON].self).map(\.currency)
-		let value = try jsons.map { try $0(String.self) }
-		XCTAssertEqual(value, ["USD", "EUR"])
-	}
 
-	func testOptionalValue() throws {
-		let data = """
-				[
-					100,
-					null,
-					101
-				]
-			"""
-		let value = try JSON(data)([Int?].self)
-		XCTAssertEqual(value, [100, nil, 101])
+		XCTAssertEqual(
+			try JSON(data).balances([Balance].self),
+			[
+				Balance(amount: Decimal(string: "1204.36")!, currency: "USD"),
+				Balance(amount: Decimal(string: "945.06")!, currency: "EUR")
+			]
+		)
 	}
+}
 
-	func testArrayIndexValue() throws {
-		let data = """
-			{
-				"balances": [
-					{
-						"amount": 1204.36,
-						"currency": "USD"
-					},
-					{
-						"amount": 945.06,
-						"currency": "EUR"
-					}
-				]
-			}
-			"""
-		let value = try JSON(data).balances[0].currency(String.self)
-		XCTAssertEqual(value, "USD")
-	}
+private struct Balance: Equatable {
+	let amount: Decimal
+	let currency: String
+}
 
-	func testLiteralSyntax() throws {
-		let data = """
-			{
-				"balances": [
-					{
-						"amount": 1204.36,
-						"currency": "USD"
-					},
-					{
-						"amount": 945.06,
-						"currency": "EUR"
-					}
-				]
-			}
-			"""
-		let value = try JSON(data)["balances"][0]["currency"](String.self)
-		XCTAssertEqual(value, "USD")
+extension Balance: ExpressibleByJSON {
+
+	init?(_ json: JSON) throws {
+		let amount = try json.amount(Decimal.self)
+		let currency = try json.currency(String.self)
+		self.init(amount: amount, currency: currency)
 	}
 }
