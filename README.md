@@ -1,25 +1,19 @@
 # Swift JSON
 
-JSON is a syntactic sugar wrapper around [`JSONSerialization`](https://developer.apple.com/documentation/foundation/jsonserialization) that uses [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) features to unwrap values.
+SwiftJSON is a syntactic sugar wrapper around [`JSONSerialization`](https://developer.apple.com/documentation/foundation/jsonserialization) that uses [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) features to unwrap values.
 
-- [JSON](#json)
+- [Swift JSON](#swift-json)
   - [Motivation](#motivation)
   - [Usage](#usage)
-      - [Plain value](#plain-value)
-      - [Nested value](#nested-value)
-      - [Double value](#double-value)
-      - [Decimal value](#decimal-value)
-      - [Plain array value](#plain-array-value)
-      - [Nested array value](#nested-array-value)
-      - [Optional value](#optional-value)
-      - [Index value](#index-value)
+    - [Access and cast nested data](#access-and-cast-nested-data)
+    - [Decode custom types with `ExpressibleByJSON`](#decode-custom-types-with-expressiblebyjson)
+    - [More examples](#more-examples)
   - [Installation](#installation)
     - [Swift Package Manager](#swift-package-manager)
-    - [Manually](#manually)
 
 ## Motivation
 
-This is useful for extracting specific values from JSON data when you don't want to define boilerplate one-off `Codable` abstractions. For instance, we are dealing with the following fragment and the longitude value is all we are interested in.
+This is useful for accessing specific values from JSON data when you want to skip over unwanted boilerplate abstractions. For instance, we have the following fragment, and the longitude value is all we are interested in:
 
 ```swift
 let data = """
@@ -36,18 +30,20 @@ let data = """
   .data(using: .utf8)!
 ```
 
-To achieve this with `Codable`, we have to populate the next structs:
+To achieve this with `JSONDecoder`, we need to populate the following structs:
 
 ```swift
-struct Response: Codable {
+import Foundation
+
+struct Response: Decodable {
   let address: Address
 }
 
-struct Address: Codable {
+struct Address: Decodable {
   let geo: Geo
 }
 
-struct Geo: Codable {
+struct Geo: Decodable {
   let longitude: Double
 }
 
@@ -57,100 +53,59 @@ let longitude = try JSONDecoder()
   .geo
   .longitude
 
-// 18.04
+// Prints 18.04
 print(longitude)
 ```
 
-With JSON it would be:
+With SwiftJSON it would be:
 
 ```swift
+import JSON
+
 let longitude = try JSON(data)
   .address
   .geo
   .longitude(Double.self)
 
-// 18.04
+// Prints 18.04
 print(longitude)
 ```
 
 ## Usage
 
-#### Plain value
+### Access and cast nested data
 
 ```swift
-let data = """
+import JSON
+
+let response = """
   {
-    "name": "Anna"
-  }
-  """
-
-// "Anna"
-let value = try JSON(data).name(String.self)
-```
-
-#### Nested value
-
-```swift
-let data = """
-  {
-    "name": {
-      "first_name": "Anna"
+    "address": {
+      "city": "Stockholm",
+      "geo": {
+        "latitude": 59.2,
+        "longitude": 18.04
+      }
     }
   }
   """
 
-// "Anna"
-let value = try JSON(data)
-  .name
-  .first_name(String.self)
+let city = try JSON(response)
+  .address
+  .city(String.self)
+
+let longitude = try JSON(response)
+  .address
+  .geo
+  .longitude(Double.self)
 ```
 
-#### Double value
+### Decode custom types with `ExpressibleByJSON`
 
 ```swift
-let data = """
-  {
-    "result": 3.14159
-  }
-  """
+import JSON
 
-// 3.14159
-let value = try JSON(data).result(Double.self)
-```
-
-#### Decimal value
-
-```swift
-let data = """
-  {
-    "balance": 20544.84
-  }
-  """
-
-// 20544.84
-let value = try JSON(data)
-  .balance(NSNumber.self)
-  .decimalValue
-```
-
-#### Plain array value
-
-```swift
-let data = """
-  [
-    100,
-    101
-  ]
-  """
-
-// [100, 101]
-let value = try JSON(data)([Int].self)
-```
-
-#### Nested array value
-
-```swift
-let data = """
+let response = """
   {
     "balances": [
       {
@@ -159,66 +114,41 @@ let data = """
       },
       {
         "amount": 945.06,
-        "currency": "USD"
+        "currency": "EUR"
       }
     ]
   }
   """
 
-// ["USD", "USD"]
-let value = try JSON(data)
-  .balances([JSON].self)
-  .map(\.currency)
-  .map { try $0(String.self) }
-```
+struct Balance {
+  let amount: Decimal
+  let currency: String
+}
 
-#### Optional value
+extension Balance: ExpressibleByJSON {
 
-```swift
-let data = """
-  [
-    100,
-    null,
-    101
-  ]
-  """
-
-// [100, nil, 101]
-let value = try JSON(data)([Int?].self)
-```
-
-#### Index value
-
-```swift
-let data = """
-  {
-    "balances": [
-      {
-        "amount": 1204.36,
-        "currency": "USD"
-      },
-      {
-        "amount": 945.06,
-        "currency": "USD"
-      }
-    ]
+  init?(_ json: JSON) throws {
+    let amount = try json.amount(Decimal.self)
+    let currency = try json.currency(String.self)
+    self.init(amount: amount, currency: currency)
   }
-  """
+}
 
-// "USD"
-let value = try JSON(data)
-  .balances[0]
-  .currency(String.self)
+let balance = try JSON(data)
+  .balances[0](Balance.self)
+
+let balances = try JSON(data)
+  .balances([Balance].self)
 ```
+
+### More examples
+
+[See tests](https://github.com/nchlscs/swift-json/blob/main/Tests/JSONTests/JSONTests.swift)
 
 ## Installation
 
 ### Swift Package Manager
 
 ```swift
-.package(url: "https://github.com/nchlscs/swift-json", from: "0.1.0")
+.package(url: "https://github.com/nchlscs/swift-json", from: "0.2.0")
 ```
-
-### Manually
-
-Download and drag `Sources/JSON/JSON.swift` file into your project.
