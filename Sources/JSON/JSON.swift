@@ -11,7 +11,7 @@ import Foundation
 public struct JSON {
 
 	let result: Result<Value, Error>
-	let keys: [CodingKey]
+	let codingPath: [CodingKey]
 
 	private func lookup(key: CodingKey) -> JSON {
 
@@ -20,28 +20,28 @@ public struct JSON {
 		do {
 			value = try result.get()
 		} catch {
-			return .init(result: .failure(error), keys: keys + [key])
+			return .init(result: .failure(error), codingPath: codingPath + [key])
 		}
 
 		switch value {
 		case let .dictionary(dictionary):
 			if let value = dictionary[key.stringValue] {
-				return .init(result: .success(value), keys: keys + [key])
+				return .init(result: .success(value), codingPath: codingPath + [key])
 			}
 		case let .array(array):
 			if let index = key.intValue, array.indices.contains(index) {
-				return .init(result: .success(array[index]), keys: keys + [key])
+				return .init(result: .success(array[index]), codingPath: codingPath + [key])
 			}
 		default:
 			break
 		}
 
 		let error = DecodingError.keyNotFound(key, .init(
-			codingPath: keys,
+			codingPath: codingPath,
 			debugDescription: "No value associated with key '\(key)'."
 		))
 
-		return .init(result: .failure(error), keys: keys + [key])
+		return .init(result: .failure(error), codingPath: codingPath + [key])
 	}
 
 	private func unwrap<T: ExpressibleByJSON>(as type: T.Type) throws -> T {
@@ -53,7 +53,7 @@ public struct JSON {
 		let value = try result.get().rawValue
 
 		throw DecodingError.typeMismatch(T.self, .init(
-			codingPath: keys,
+			codingPath: codingPath,
 			debugDescription: "Expected \(T.self) value but found \(Swift.type(of: value)) instead."
 		))
 	}
@@ -63,7 +63,7 @@ public extension JSON {
 
 	init(_ data: Data, options: JSONSerialization.ReadingOptions = []) throws {
 		let object = try JSONSerialization.jsonObject(with: data, options: options)
-		self.init(result: .success(.init(rawValue: object)), keys: [])
+		self.init(result: .success(.init(rawValue: object)), codingPath: [])
 	}
 
 	init(_ string: String, options: JSONSerialization.ReadingOptions = []) throws {

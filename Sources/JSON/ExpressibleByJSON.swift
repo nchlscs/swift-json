@@ -144,7 +144,7 @@ extension Array: ExpressibleByJSON where Element: ExpressibleByJSON {
 		case let .array(array):
 			var result = [Element]()
 			for value in array {
-				let json = JSON(result: .success(value), keys: json.keys)
+				let json = JSON(result: .success(value), codingPath: json.codingPath)
 				guard let element = try Element(json) else {
 					return nil
 				}
@@ -167,7 +167,7 @@ extension Dictionary: ExpressibleByJSON
 		case let .dictionary(dictionary):
 			var result = [String: Value](minimumCapacity: dictionary.count)
 			for (key, value) in dictionary {
-				let json = JSON(result: .success(value), keys: json.keys)
+				let json = JSON(result: .success(value), codingPath: json.codingPath)
 				guard let element = try Value(json) else {
 					return nil
 				}
