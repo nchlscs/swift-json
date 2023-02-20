@@ -90,10 +90,12 @@ let response = """
   }
   """
 
+// Stockholm
 let city = try JSON(response)
   .address
   .city(String.self)
 
+// 18.04
 let longitude = try JSON(response)
   .address
   .geo
@@ -134,10 +136,15 @@ extension Balance: ExpressibleByJSON {
   }
 }
 
-let balance = try JSON(data)
+// Balance(amount: 1204.36, currency: "USD")
+let balance = try JSON(response)
   .balances[0](Balance.self)
 
-let balances = try JSON(data)
+// [
+//   Balance(amount: 1204.36, currency: "USD"),
+//   Balance(amount: 945.06, currency: "EUR")
+// ]
+let balances = try JSON(response)
   .balances([Balance].self)
 ```
 
