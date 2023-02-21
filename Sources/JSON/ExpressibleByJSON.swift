@@ -125,7 +125,16 @@ extension URL: ExpressibleByJSON {
 extension Optional: ExpressibleByJSON where Wrapped: ExpressibleByJSON {
 
 	public init?(_ json: JSON) throws {
-		self = try Wrapped(json)
+		let value = try json.result.get()
+		switch value {
+		case .null:
+			self = .none
+		default:
+			guard let wrapped = try Wrapped(json) else {
+				return nil
+			}
+			self = .some(wrapped)
+		}
 	}
 }
 
