@@ -130,9 +130,10 @@ struct Balance {
 extension Balance: JSONDecodable {
 
   init?(_ json: JSON) throws {
-    let amount = try json.amount(Decimal.self)
-    let currency = try json.currency(String.self)
-    self.init(amount: amount, currency: currency)
+    try self.init(
+      amount: json.amount(),
+      currency: json.currency()
+    )
   }
 }
 
