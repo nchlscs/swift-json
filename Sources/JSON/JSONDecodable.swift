@@ -6,11 +6,11 @@
 
 import Foundation
 
-public protocol ExpressibleByJSON {
+public protocol JSONDecodable {
   init?(_ json: JSON) throws
 }
 
-extension String: ExpressibleByJSON {
+extension String: JSONDecodable {
 
   public init?(_ json: JSON) throws {
     let value = try json.result.get()
@@ -23,64 +23,64 @@ extension String: ExpressibleByJSON {
   }
 }
 
-public extension LosslessStringConvertible where Self: ExpressibleByJSON {
+public extension LosslessStringConvertible where Self: JSONDecodable {
 
   init?(_ json: JSON) throws {
     let value = try json.result.get()
     switch value {
-    case let .double(double):
-      guard let result = Self(String(double)) else {
+    case let .float(float):
+      guard let result = Self(String(float)) else {
         return nil
       }
       self = result
-    case let .int(int):
-      guard let result = Self(String(int)) else {
+    case let .integer(integer):
+      guard let result = Self(String(integer)) else {
         return nil
       }
       self = result
     case let .string(string):
-      guard let int = Self(string) else {
+      guard let result = Self(string) else {
         return nil
       }
-      self = int
+      self = result
     default:
       return nil
     }
   }
 }
 
-extension Int: ExpressibleByJSON {}
-extension Int8: ExpressibleByJSON {}
-extension Int16: ExpressibleByJSON {}
-extension Int32: ExpressibleByJSON {}
-extension Int64: ExpressibleByJSON {}
-extension UInt: ExpressibleByJSON {}
-extension UInt8: ExpressibleByJSON {}
-extension UInt16: ExpressibleByJSON {}
-extension UInt32: ExpressibleByJSON {}
-extension UInt64: ExpressibleByJSON {}
-extension Float: ExpressibleByJSON {}
-extension Double: ExpressibleByJSON {}
+extension Int: JSONDecodable {}
+extension Int8: JSONDecodable {}
+extension Int16: JSONDecodable {}
+extension Int32: JSONDecodable {}
+extension Int64: JSONDecodable {}
+extension UInt: JSONDecodable {}
+extension UInt8: JSONDecodable {}
+extension UInt16: JSONDecodable {}
+extension UInt32: JSONDecodable {}
+extension UInt64: JSONDecodable {}
+extension Float: JSONDecodable {}
+extension Double: JSONDecodable {}
 
-extension Bool: ExpressibleByJSON {
+extension Bool: JSONDecodable {
 
   public init?(_ json: JSON) throws {
     let value = try json.result.get()
     switch value {
-    case let .bool(bool):
-      self = bool
+    case let .boolean(boolean):
+      self = boolean
     case let .string(string):
-      guard let bool = Bool(string) else {
+      guard let boolean = Bool(string) else {
         return nil
       }
-      self = bool
+      self = boolean
     default:
       return nil
     }
   }
 }
 
-extension Decimal: ExpressibleByJSON {
+extension Decimal: JSONDecodable {
 
   public init?(_ json: JSON) throws {
     let value = try json.result.get()
@@ -90,13 +90,13 @@ extension Decimal: ExpressibleByJSON {
         return nil
       }
       self = decimal
-    case let .int(int):
-      guard let decimal = Decimal(string: String(int)) else {
+    case let .integer(integer):
+      guard let decimal = Decimal(string: String(integer)) else {
         return nil
       }
       self = decimal
-    case let .double(double):
-      guard let decimal = Decimal(string: String(double)) else {
+    case let .float(float):
+      guard let decimal = Decimal(string: String(float)) else {
         return nil
       }
       self = decimal
@@ -106,7 +106,7 @@ extension Decimal: ExpressibleByJSON {
   }
 }
 
-extension URL: ExpressibleByJSON {
+extension URL: JSONDecodable {
 
   public init?(_ json: JSON) throws {
     let value = try json.result.get()
@@ -122,7 +122,7 @@ extension URL: ExpressibleByJSON {
   }
 }
 
-extension Optional: ExpressibleByJSON where Wrapped: ExpressibleByJSON {
+extension Optional: JSONDecodable where Wrapped: JSONDecodable {
 
   public init?(_ json: JSON) throws {
     let value = try json.result.get()
@@ -138,20 +138,21 @@ extension Optional: ExpressibleByJSON where Wrapped: ExpressibleByJSON {
   }
 }
 
-extension JSON: ExpressibleByJSON {
+extension JSON: JSONDecodable {
 
-  public init?(_ json: JSON) throws {
+  public init(_ json: JSON) {
     self = json
   }
 }
 
-extension Array: ExpressibleByJSON where Element: ExpressibleByJSON {
+extension Array: JSONDecodable where Element: JSONDecodable {
 
   public init?(_ json: JSON) throws {
     let value = try json.result.get()
     switch value {
     case let .array(array):
       var result = [Element]()
+      result.reserveCapacity(array.count)
       for value in array {
         let json = JSON(result: .success(value), codingPath: json.codingPath)
         guard let element = try Element(json) else {
@@ -166,9 +167,9 @@ extension Array: ExpressibleByJSON where Element: ExpressibleByJSON {
   }
 }
 
-extension Dictionary: ExpressibleByJSON
+extension Dictionary: JSONDecodable
   where Key == String,
-  Value: ExpressibleByJSON {
+  Value: JSONDecodable {
 
   public init?(_ json: JSON) throws {
     let value = try json.result.get()

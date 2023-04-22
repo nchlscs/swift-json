@@ -6,7 +6,7 @@ SwiftJSON is a syntactic sugar wrapper around [`JSONSerialization`](https://deve
   - [Motivation](#motivation)
   - [Usage](#usage)
     - [Access and cast nested data](#access-and-cast-nested-data)
-    - [Decode custom types with `ExpressibleByJSON`](#decode-custom-types-with-expressiblebyjson)
+    - [Decode custom types with `JSONDecodable`](#decode-custom-types-with-JSONDecodable)
     - [More examples](#more-examples)
   - [Installation](#installation)
     - [Swift Package Manager](#swift-package-manager)
@@ -102,7 +102,7 @@ let longitude = try JSON(response)
   .longitude(Double.self)
 ```
 
-### Decode custom types with `ExpressibleByJSON`
+### Decode custom types with `JSONDecodable`
 
 ```swift
 import JSON
@@ -127,7 +127,7 @@ struct Balance {
   let currency: String
 }
 
-extension Balance: ExpressibleByJSON {
+extension Balance: JSONDecodable {
 
   init?(_ json: JSON) throws {
     let amount = try json.amount(Decimal.self)

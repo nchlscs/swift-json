@@ -10,12 +10,12 @@ import Foundation
 @dynamicMemberLookup
 public struct JSON {
 
-  let result: Result<Value, Error>
+  let result: Result<JSONValue, Error>
   let codingPath: [CodingKey]
 
   private func lookup(key: CodingKey) -> JSON {
 
-    let value: Value
+    let value: JSONValue
 
     do {
       value = try result.get()
@@ -47,34 +47,39 @@ public struct JSON {
     return .init(result: .failure(error), codingPath: codingPath + [key])
   }
 
-  private func unwrap<T: ExpressibleByJSON>(as type: T.Type) throws -> T {
+  private func unwrap<T: JSONDecodable>(as type: T.Type) throws -> T {
 
     if let value = try T(self) {
       return value
     }
 
-    let value = try result.get().rawValue
+    let rawType = try result.get().rawValueType
 
     throw DecodingError.typeMismatch(T.self, .init(
       codingPath: codingPath,
-      debugDescription: "Expected \(T.self) value but found \(Swift.type(of: value)) instead."
+      debugDescription: "Expected \(T.self) value but found \(rawType) instead."
     ))
   }
 }
 
 public extension JSON {
 
-  init(_ data: Data, options: JSONSerialization.ReadingOptions = []) throws {
-    let object = try JSONSerialization.jsonObject(with: data, options: options)
-    self.init(result: .success(.init(rawValue: object)), codingPath: [])
+  init(
+    _ data: Data,
+    using decoder: some JSONValueDecoder = JSONSerializationDecoder()
+  ) {
+    let result = Result<JSONValue, Error> {
+      try decoder.decodeJSONValue(from: data)
+    }
+    self.init(result: result, codingPath: [])
   }
 
   init(
     _ string: String,
-    options: JSONSerialization.ReadingOptions = []
-  ) throws {
+    using decoder: some JSONValueDecoder = JSONSerializationDecoder()
+  ) {
     let data = Data(string.utf8)
-    try self.init(data, options: options)
+    self.init(data, using: decoder)
   }
 
   subscript(dynamicMember key: String) -> JSON {
@@ -82,15 +87,15 @@ public extension JSON {
   }
 
   subscript(key: String) -> JSON {
-    self[dynamicMember: key]
+    lookup(key: .init(stringValue: key))
   }
 
   subscript(index: Int) -> JSON {
     lookup(key: .init(intValue: index))
   }
 
-  func dynamicallyCall<T: ExpressibleByJSON>(
-    withArguments arguments: [T.Type]
+  func dynamicallyCall<T: JSONDecodable>(
+    withArguments arguments: [T.Type] = [T.self]
   ) throws -> T {
     try unwrap(as: T.self)
   }
