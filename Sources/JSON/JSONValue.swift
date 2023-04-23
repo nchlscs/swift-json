@@ -14,13 +14,6 @@ public enum JSONValue {
   case null
 }
 
-public extension JSONValue {
-
-  init(_ json: JSON) throws {
-    self = try json.result.get()
-  }
-}
-
 extension JSONValue {
 
   var rawValueType: Any.Type {

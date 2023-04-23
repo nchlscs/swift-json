@@ -19,12 +19,12 @@ final class JSONTests: XCTestCase {
       """
     let json = JSON(data)
 
-    XCTAssertEqual(try json.string(String.self), "Anna")
-    XCTAssertEqual(try json.dict.string(String.self), "1234")
-    XCTAssertEqual(try json["dict"]["string"](String.self), "1234")
-    XCTAssertThrowsError(try json.int(String.self))
-    XCTAssertThrowsError(try json.dict.value.string(String.self))
-    XCTAssertThrowsError(try json.dict.string.value(String.self))
+    XCTAssertEqual(try json.string, "Anna")
+    XCTAssertEqual(try json.dict.string, "1234")
+    XCTAssertEqual(try json["dict"]["string"], "1234")
+    XCTAssertThrowsError(try json.int as String)
+    XCTAssertThrowsError(try json.dict.value.string as String)
+    XCTAssertThrowsError(try json.dict.string.value as String)
   }
 
   func testInt() throws {
@@ -38,10 +38,10 @@ final class JSONTests: XCTestCase {
       """
     let json = JSON(data)
 
-    XCTAssertEqual(try json.int(Int.self), 123)
-    XCTAssertEqual(try json.string(Int.self), 123)
-    XCTAssertEqual(try json.negative(Int.self), -123)
-    XCTAssertThrowsError(try json.double(Int.self))
+    XCTAssertEqual(try json.int, 123)
+    XCTAssertEqual(try json.string, 123)
+    XCTAssertEqual(try json.negative, -123)
+    XCTAssertThrowsError(try json.double as Int)
   }
 
   func testUInt() throws {
@@ -55,10 +55,10 @@ final class JSONTests: XCTestCase {
       """
     let json = JSON(data)
 
-    XCTAssertEqual(try json.int(UInt.self), 123)
-    XCTAssertEqual(try json.string(UInt.self), 123)
-    XCTAssertThrowsError(try json.negative(UInt.self))
-    XCTAssertThrowsError(try json.double(UInt.self))
+    XCTAssertEqual(try json.int, 123)
+    XCTAssertEqual(try json.string, 123)
+    XCTAssertThrowsError(try json.negative as UInt)
+    XCTAssertThrowsError(try json.double as UInt)
   }
 
   func testDouble() throws {
@@ -71,9 +71,9 @@ final class JSONTests: XCTestCase {
       """
     let json = JSON(data)
 
-    XCTAssertEqual(try json.int(Double.self), 1234.0)
-    XCTAssertEqual(try json.double(Double.self), 1234.56)
-    XCTAssertEqual(try json.string(Double.self), 1234.56)
+    XCTAssertEqual(try json.int, 1234.0)
+    XCTAssertEqual(try json.double, 1234.56)
+    XCTAssertEqual(try json.string, 1234.56)
   }
 
   func testBool() throws {
@@ -86,9 +86,9 @@ final class JSONTests: XCTestCase {
       """
     let json = JSON(data)
 
-    XCTAssertEqual(try json.bool(Bool.self), true)
-    XCTAssertEqual(try json.string(Bool.self), false)
-    XCTAssertThrowsError(try json.int(Bool.self))
+    XCTAssertEqual(try json.bool, true)
+    XCTAssertEqual(try json.string, false)
+    XCTAssertThrowsError(try json.int as Bool)
   }
 
   func testDecimal() throws {
@@ -101,9 +101,9 @@ final class JSONTests: XCTestCase {
       """
     let json = JSON(data)
 
-    XCTAssertEqual(try json.int(Decimal.self), Decimal(string: "1234.0"))
-    XCTAssertEqual(try json.double(Decimal.self), Decimal(string: "1234.56"))
-    XCTAssertEqual(try json.string(Decimal.self), Decimal(string: "1234.56"))
+    XCTAssertEqual(try json.int, Decimal(string: "1234.0"))
+    XCTAssertEqual(try json.double, Decimal(string: "1234.56"))
+    XCTAssertEqual(try json.string, Decimal(string: "1234.56"))
   }
 
   func testURL() throws {
@@ -116,10 +116,10 @@ final class JSONTests: XCTestCase {
     let json = JSON(data)
 
     XCTAssertEqual(
-      try json.string(URL.self),
+      try json.string,
       URL(string: "https://example.com")
     )
-    XCTAssertThrowsError(try json.dict.string(URL.self))
+    XCTAssertThrowsError(try json.dict.string as URL)
   }
 
   func testArray() throws {
@@ -132,9 +132,9 @@ final class JSONTests: XCTestCase {
     let json = JSON(data)
 
     XCTAssertEqual(try json([JSON].self).count, 2)
-    XCTAssertEqual(try json[0]([Int].self), [1, 2])
-    XCTAssertEqual(try json[1]([Int].self), [3, 4])
-    XCTAssertThrowsError(try json[2]([Int].self))
+    XCTAssertEqual(try json[0], [1, 2])
+    XCTAssertEqual(try json[1], [3, 4])
+    XCTAssertThrowsError(try json[2] as [Int])
   }
 
   func testDictionary() throws {
@@ -148,7 +148,7 @@ final class JSONTests: XCTestCase {
     let json = JSON(data)
 
     XCTAssertEqual(try json([String: JSON].self).count, 3)
-    XCTAssertEqual(try json([String: JSON].self)["int"]!(Int.self), 1234)
+    XCTAssertEqual(try json["int"], 1234)
   }
 
   func testOptional() throws {
@@ -160,8 +160,8 @@ final class JSONTests: XCTestCase {
       """
     let json = JSON(data)
 
-    XCTAssertEqual(try json[0]([String?].self), ["1", "2", nil])
-    XCTAssertEqual(try json[1]([Int?].self), [3, nil, 4])
+    XCTAssertEqual(try json[0], ["1", "2", nil])
+    XCTAssertEqual(try json[1], [3, nil, 4])
   }
 
   func testJSONDecodable() throws {
@@ -181,7 +181,7 @@ final class JSONTests: XCTestCase {
       """
 
     XCTAssertEqual(
-      try JSON(data).balances([Balance].self),
+      try JSON(data).balances,
       [
         Balance(amount: Decimal(string: "1204.36")!, currency: "USD"),
         Balance(amount: Decimal(string: "945.06")!, currency: "EUR"),
@@ -199,8 +199,8 @@ extension Balance: JSONDecodable {
 
   init?(_ json: JSON) throws {
     try self.init(
-      amount: json.amount(),
-      currency: json.currency()
+      amount: json.amount,
+      currency: json.currency
     )
   }
 }

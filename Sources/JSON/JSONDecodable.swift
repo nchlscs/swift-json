@@ -138,13 +138,6 @@ extension Optional: JSONDecodable where Wrapped: JSONDecodable {
   }
 }
 
-extension JSON: JSONDecodable {
-
-  public init(_ json: JSON) {
-    self = json
-  }
-}
-
 extension Array: JSONDecodable where Element: JSONDecodable {
 
   public init?(_ json: JSON) throws {
@@ -187,5 +180,19 @@ extension Dictionary: JSONDecodable
     default:
       return nil
     }
+  }
+}
+
+extension JSON: JSONDecodable {
+
+  public init(_ json: JSON) {
+    self = json
+  }
+}
+
+extension JSONValue: JSONDecodable {
+
+  public init(_ json: JSON) throws {
+    self = try json.result.get()
   }
 }

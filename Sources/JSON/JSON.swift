@@ -94,6 +94,24 @@ public extension JSON {
     lookup(key: .init(intValue: index))
   }
 
+  subscript<T: JSONDecodable>(dynamicMember key: String) -> T {
+    get throws {
+      try lookup(key: .init(stringValue: key)).unwrap(as: T.self)
+    }
+  }
+
+  subscript<T: JSONDecodable>(key: String) -> T {
+    get throws {
+      try lookup(key: .init(stringValue: key)).unwrap(as: T.self)
+    }
+  }
+
+  subscript<T: JSONDecodable>(index: Int) -> T {
+    get throws {
+      try lookup(key: .init(intValue: index)).unwrap(as: T.self)
+    }
+  }
+
   func dynamicallyCall<T: JSONDecodable>(
     withArguments arguments: [T.Type] = [T.self]
   ) throws -> T {
