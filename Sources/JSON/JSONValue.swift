@@ -4,7 +4,7 @@
  MIT license
  */
 
-public enum JSONValue {
+public enum JSONValue: Equatable {
   case dictionary([String: JSONValue])
   case array([JSONValue])
   case string(String)
@@ -14,25 +14,52 @@ public enum JSONValue {
   case null
 }
 
-extension JSONValue {
+extension JSONValue: ExpressibleByDictionaryLiteral {
 
-  var rawValueType: Any.Type {
-    switch self {
-    case .dictionary:
-      return [String: Any].self
-    case .array:
-      return [Any].self
-    case .string:
-      return String.self
-    case .boolean:
-      return Bool.self
-    case .integer:
-      return Int.self
-    case .float:
-      return Double.self
-    case .null:
-      return Any?.self
-    }
+  public init(dictionaryLiteral elements: (String, JSONValue)...) {
+    self = .dictionary(Dictionary(uniqueKeysWithValues: elements))
+  }
+}
+
+extension JSONValue: ExpressibleByArrayLiteral {
+
+  public init(arrayLiteral elements: JSONValue...) {
+    self = .array(elements)
+  }
+}
+
+extension JSONValue: ExpressibleByStringLiteral {
+
+  public init(stringLiteral value: StringLiteralType) {
+    self = .string(value)
+  }
+}
+
+extension JSONValue: ExpressibleByBooleanLiteral {
+
+  public init(booleanLiteral value: BooleanLiteralType) {
+    self = .boolean(value)
+  }
+}
+
+extension JSONValue: ExpressibleByIntegerLiteral {
+
+  public init(integerLiteral value: IntegerLiteralType) {
+    self = .integer(value)
+  }
+}
+
+extension JSONValue: ExpressibleByFloatLiteral {
+
+  public init(floatLiteral value: FloatLiteralType) {
+    self = .float(value)
+  }
+}
+
+extension JSONValue: ExpressibleByNilLiteral {
+
+  public init(nilLiteral: ()) {
+    self = .null
   }
 }
 
@@ -55,9 +82,10 @@ extension JSONValue: Codable {
     } else if container.decodeNil() {
       self = .null
     } else {
-      throw DecodingError.dataCorrupted(
-        .init(codingPath: decoder.codingPath, debugDescription: "")
-      )
+      throw DecodingError.dataCorrupted(.init(
+        codingPath: [],
+        debugDescription: "The given data was not valid JSON."
+      ))
     }
   }
 
@@ -78,6 +106,28 @@ extension JSONValue: Codable {
       try container.encode(float)
     case .null:
       try container.encodeNil()
+    }
+  }
+}
+
+extension JSONValue {
+
+  var underlyingType: String {
+    switch self {
+    case .dictionary:
+      return "Dictionary"
+    case .array:
+      return "Array"
+    case .string:
+      return "String"
+    case .boolean:
+      return "Boolean"
+    case .integer:
+      return "Integer"
+    case .float:
+      return "Float"
+    case .null:
+      return "Null"
     }
   }
 }

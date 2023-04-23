@@ -13,51 +13,43 @@ public struct JSON {
   let result: Result<JSONValue, Error>
   let codingPath: [CodingKey]
 
-  private func lookup(key: CodingKey) -> JSON {
+  @inline(__always)
+  private func lookup(key: CodingKey) throws -> JSON {
 
-    let value: JSONValue
+    let value = try result.get()
 
-    do {
-      value = try result.get()
-    } catch {
-      return .init(result: .failure(error), codingPath: codingPath + [key])
+    if case let .dictionary(dictionary) = value,
+       let value = dictionary[key.stringValue] {
+      return .init(result: .success(value), codingPath: codingPath + [key])
     }
 
-    switch value {
-    case let .dictionary(dictionary):
-      if let value = dictionary[key.stringValue] {
-        return .init(result: .success(value), codingPath: codingPath + [key])
-      }
-    case let .array(array):
-      if let index = key.intValue, array.indices.contains(index) {
-        return .init(
-          result: .success(array[index]),
-          codingPath: codingPath + [key]
-        )
-      }
-    default:
-      break
+    if case let .array(array) = value,
+       let index = key.intValue,
+       array.indices.contains(index) {
+      return .init(
+        result: .success(array[index]),
+        codingPath: codingPath + [key]
+      )
     }
 
-    let error = DecodingError.keyNotFound(key, .init(
+    throw DecodingError.keyNotFound(key, .init(
       codingPath: codingPath,
       debugDescription: "No value associated with key '\(key)'."
     ))
-
-    return .init(result: .failure(error), codingPath: codingPath + [key])
   }
 
+  @inline(__always)
   private func unwrap<T: JSONDecodable>(as type: T.Type) throws -> T {
 
     if let value = try T(self) {
       return value
     }
 
-    let rawType = try result.get().rawValueType
+    let underlyingType = try result.get().underlyingType
 
     throw DecodingError.typeMismatch(T.self, .init(
       codingPath: codingPath,
-      debugDescription: "Expected \(T.self) value but found \(rawType) instead."
+      debugDescription: "Expected \(T.self) value but found \(underlyingType) instead."
     ))
   }
 }
@@ -82,16 +74,26 @@ public extension JSON {
     self.init(data, using: decoder)
   }
 
+  init(_ jsonValue: JSONValue) {
+    self.init(result: .success(jsonValue), codingPath: [])
+  }
+
   subscript(dynamicMember key: String) -> JSON {
-    lookup(key: .init(stringValue: key))
+    get throws {
+      try lookup(key: .init(stringValue: key))
+    }
   }
 
   subscript(key: String) -> JSON {
-    lookup(key: .init(stringValue: key))
+    get throws {
+      try lookup(key: .init(stringValue: key))
+    }
   }
 
   subscript(index: Int) -> JSON {
-    lookup(key: .init(intValue: index))
+    get throws {
+      try lookup(key: .init(intValue: index))
+    }
   }
 
   subscript<T: JSONDecodable>(dynamicMember key: String) -> T {
