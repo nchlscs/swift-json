@@ -15,18 +15,24 @@ public struct JSONSerializationDecoder: JSONValueDecoder {
   }
 
   public func decodeJSONValue(from data: Data) throws -> JSONValue {
-    let jsonObject = try JSONSerialization.jsonObject(
+    let anyObject = try JSONSerialization.jsonObject(
       with: data,
       options: options
     )
+    guard let jsonObject = anyObject as? NSObject else {
+      throw DecodingError.dataCorrupted(.init(
+        codingPath: [],
+        debugDescription: "The given data was not valid JSON."
+      ))
+    }
     return try parse(jsonObject: jsonObject)
   }
 
-  private func parse(jsonObject: Any) throws -> JSONValue {
+  private func parse(jsonObject: NSObject) throws -> JSONValue {
     switch jsonObject {
-    case let dictionary as [String: Any]:
+    case let dictionary as [String: NSObject]:
       return try .dictionary(dictionary.mapValues(parse))
-    case let array as NSArray:
+    case let array as [NSObject]:
       return try .array(array.map(parse))
     case let string as NSString:
       return .string(string as String)
