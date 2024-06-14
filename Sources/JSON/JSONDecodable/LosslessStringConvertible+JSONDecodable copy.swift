@@ -10,17 +10,7 @@ private extension LosslessStringConvertible {
   init?(commonInitFrom json: JSON) throws {
     let value = try json.result.get()
     switch value {
-    case let .float(float):
-      guard let result = Self(String(float)) else {
-        return nil
-      }
-      self = result
-    case let .integer(integer):
-      guard let result = Self(String(integer)) else {
-        return nil
-      }
-      self = result
-    case let .string(string):
+    case let .string(string), let .number(string):
       guard let result = Self(string) else {
         return nil
       }

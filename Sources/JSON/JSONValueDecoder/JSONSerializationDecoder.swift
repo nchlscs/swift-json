@@ -8,7 +8,16 @@ import Foundation
 
 public struct JSONSerializationDecoder: JSONValueDecoder {
 
-  public let options: JSONSerialization.ReadingOptions
+  private let options: JSONSerialization.ReadingOptions
+  private static let formatter: NumberFormatter = {
+    let f = NumberFormatter()
+    f.maximumFractionDigits = .max
+    f.minimumFractionDigits = .zero
+    f.decimalSeparator = "."
+    f.groupingSeparator = ""
+    f.thousandSeparator = ""
+    return f
+  }()
 
   public init(options: JSONSerialization.ReadingOptions = []) {
     self.options = options
@@ -37,14 +46,10 @@ public struct JSONSerializationDecoder: JSONValueDecoder {
     case let string as NSString:
       return .string(string as String)
     case let number as NSNumber:
-      switch number.kind {
-      case .boolean:
+      if number.isBoolean {
         return .boolean(number.boolValue)
-      case .integer:
-        return .integer(number.intValue)
-      case .float:
-        return .float(number.doubleValue)
       }
+      return .number(Self.formatter.string(from: number)!)
     case _ as NSNull:
       return .null
     default:
@@ -58,19 +63,7 @@ public struct JSONSerializationDecoder: JSONValueDecoder {
 
 private extension NSNumber {
 
-  enum Kind {
-    case boolean
-    case integer
-    case float
-  }
-
-  var kind: Kind {
-    if CFGetTypeID(self) == CFBooleanGetTypeID() {
-      return .boolean
-    }
-    if CFNumberIsFloatType(self) {
-      return .float
-    }
-    return .integer
+  var isBoolean: Bool {
+    CFGetTypeID(self) == CFBooleanGetTypeID()
   }
 }

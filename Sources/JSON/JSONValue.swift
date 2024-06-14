@@ -9,8 +9,7 @@ public enum JSONValue: Equatable {
   case array([JSONValue])
   case string(String)
   case boolean(Bool)
-  case integer(Int)
-  case float(Double)
+  case number(String)
   case null
 }
 
@@ -45,14 +44,14 @@ extension JSONValue: ExpressibleByBooleanLiteral {
 extension JSONValue: ExpressibleByIntegerLiteral {
 
   public init(integerLiteral value: IntegerLiteralType) {
-    self = .integer(value)
+    self = .number(String(value))
   }
 }
 
 extension JSONValue: ExpressibleByFloatLiteral {
 
   public init(floatLiteral value: FloatLiteralType) {
-    self = .float(value)
+    self = .number(String(value))
   }
 }
 
@@ -63,31 +62,7 @@ extension JSONValue: ExpressibleByNilLiteral {
   }
 }
 
-extension JSONValue: Codable {
-
-  public init(from decoder: Decoder) throws {
-    let container = try decoder.singleValueContainer()
-    if let dictionary = try? container.decode([String: Self].self) {
-      self = .dictionary(dictionary)
-    } else if let array = try? container.decode([Self].self) {
-      self = .array(array)
-    } else if let string = try? container.decode(String.self) {
-      self = .string(string)
-    } else if let boolean = try? container.decode(Bool.self) {
-      self = .boolean(boolean)
-    } else if let integer = try? container.decode(Int.self) {
-      self = .integer(integer)
-    } else if let float = try? container.decode(Double.self) {
-      self = .float(float)
-    } else if container.decodeNil() {
-      self = .null
-    } else {
-      throw DecodingError.dataCorrupted(.init(
-        codingPath: [],
-        debugDescription: "The given data was not valid JSON."
-      ))
-    }
-  }
+extension JSONValue: Encodable {
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.singleValueContainer()
@@ -100,10 +75,14 @@ extension JSONValue: Codable {
       try container.encode(string)
     case let .boolean(boolean):
       try container.encode(boolean)
-    case let .integer(integer):
-      try container.encode(integer)
-    case let .float(float):
-      try container.encode(float)
+    case let .number(number):
+      if let int = Int(number) {
+        try container.encode(int)
+      } else if let double = Double(number) {
+        try container.encode(double)
+      } else {
+        try container.encode(number)
+      }
     case .null:
       try container.encodeNil()
     }
@@ -122,10 +101,8 @@ extension JSONValue {
       return "String"
     case .boolean:
       return "Boolean"
-    case .integer:
-      return "Integer"
-    case .float:
-      return "Float"
+    case .number:
+      return "Number"
     case .null:
       return "Null"
     }

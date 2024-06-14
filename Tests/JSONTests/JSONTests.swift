@@ -110,7 +110,7 @@ final class JSONTests: XCTestCase {
     let data = """
       {
       	"string": "https://example.com",
-      	"dict": { "string": "^><?//" }
+      	"dict": { "string": "https://{}" }
       }
       """
     let json = JSON(data)
@@ -184,7 +184,7 @@ final class JSONTests: XCTestCase {
       try JSON(data).balances,
       [
         Balance(amount: Decimal(string: "1204.36")!, currency: "USD"),
-        Balance(amount: Decimal(string: "945.06")!, currency: "EUR"),
+        Balance(amount: Decimal(string: "945.06")!, currency: "EUR")
       ]
     )
   }

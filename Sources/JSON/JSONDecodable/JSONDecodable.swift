@@ -46,18 +46,8 @@ extension Decimal: JSONDecodable {
   public init?(_ json: JSON) throws {
     let value = try json.result.get()
     switch value {
-    case let .string(string):
+    case let .string(string), let .number(string):
       guard let decimal = Decimal(string: string) else {
-        return nil
-      }
-      self = decimal
-    case let .integer(integer):
-      guard let decimal = Decimal(string: String(integer)) else {
-        return nil
-      }
-      self = decimal
-    case let .float(float):
-      guard let decimal = Decimal(string: String(float)) else {
         return nil
       }
       self = decimal

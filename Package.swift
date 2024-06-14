@@ -10,7 +10,7 @@ let package = Package(
     .library(
       name: "JSON",
       targets: ["JSON"]
-    ),
+    )
   ],
   targets: [
     .target(
@@ -20,6 +20,6 @@ let package = Package(
     .testTarget(
       name: "JSONTests",
       dependencies: ["JSON"]
-    ),
+    )
   ]
 )

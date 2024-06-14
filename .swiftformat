@@ -1,13 +1,14 @@
---swiftversion 5.7
---maxwidth 80
+--swiftversion 5.8
+--maxwidth 100
 --indent 2
 --indentstrings true
 --xcodeindentation true
 --self init-only
 --importgrouping testable-last
 --wraparguments before-first
+--commas inline
+--ifdef outdent
 
---enable acronyms
 --enable wrapConditionalBodies
 --enable blankLineAfterImports
 
@@ -15,3 +16,4 @@
 --disable redundantRawValues
 --disable unusedArguments
 --disable wrapMultilineStatementBraces
+--disable preferForLoop
