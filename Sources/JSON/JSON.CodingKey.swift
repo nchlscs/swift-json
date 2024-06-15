@@ -6,7 +6,7 @@
 
 extension JSON {
 
-  struct CodingKey: Swift.CodingKey {
+  struct CodingKey: Swift.CodingKey, Equatable {
 
     let stringValue: String
     let intValue: Int?

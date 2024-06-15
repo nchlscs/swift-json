@@ -10,6 +10,60 @@ public protocol JSONDecodable {
   init?(_ json: JSON) throws
 }
 
+public extension JSONDecodable where Self: LosslessStringConvertible {
+
+  init?(_ json: JSON) throws {
+    let value = try json.result.get()
+    switch value {
+    case let .string(string), let .number(string):
+      guard let result = Self(string) else {
+        return nil
+      }
+      self = result
+    default:
+      return nil
+    }
+  }
+}
+
+extension JSON: JSONDecodable {
+
+  public init(_ json: JSON) {
+    self = json
+  }
+}
+
+extension JSONValue: JSONDecodable {
+
+  public init(_ json: JSON) throws {
+    self = try json.result.get()
+  }
+}
+
+extension Int: JSONDecodable {}
+
+extension Int8: JSONDecodable {}
+
+extension Int16: JSONDecodable {}
+
+extension Int32: JSONDecodable {}
+
+extension Int64: JSONDecodable {}
+
+extension UInt: JSONDecodable {}
+
+extension UInt8: JSONDecodable {}
+
+extension UInt16: JSONDecodable {}
+
+extension UInt32: JSONDecodable {}
+
+extension UInt64: JSONDecodable {}
+
+extension Float: JSONDecodable {}
+
+extension Double: JSONDecodable {}
+
 extension String: JSONDecodable {
 
   public init?(_ json: JSON) throws {
@@ -118,7 +172,7 @@ extension Dictionary: JSONDecodable
   public init?(_ json: JSON) throws {
     let value = try json.result.get()
     switch value {
-    case let .dictionary(dictionary):
+    case let .object(dictionary):
       var result = [String: Value](minimumCapacity: dictionary.count)
       for (key, value) in dictionary {
         let json = JSON(result: .success(value), codingPath: json.codingPath)

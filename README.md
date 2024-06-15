@@ -1,19 +1,13 @@
 # Swift JSON
 
-`swift-json` is a dynamic wrapper around JSON decoders that uses [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) features to access values from JSON data.
-
-- [Swift JSON](#swift-json)
-  - [Overview](#overview)
-    - [More examples](#more-examples)
-  - [Installation](#installation)
-    - [Swift Package Manager](#swift-package-manager)
+`swift-json` is an experimental library that leverages the [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) dynamic features of Swift providing an intuitive way to access values from JSON data.
 
 ## Overview
 
-This is useful for accessing specific values from JSON data when you want to skip over unwanted boilerplate abstractions. For instance, we have the following fragment, and the longitude value is all we are interested in:
-
 ```swift
-let data = """
+import JSON
+
+let response = """
   {
     "address": {
       "city": "Stockholm",
@@ -24,58 +18,54 @@ let data = """
     }
   }
   """
-  .data(using: .utf8)!
-```
 
-To achieve this with `JSONDecoder`, we need to populate the following structs:
+let json = try JSON(response)
+let city: String = try json.address.city
+let longitude: Double = try json.address.geo.longitude
 
-```swift
-import Foundation
+// Stockholm
+print(city)
 
-struct Response: Decodable {
-  let address: Address
-}
-
-struct Address: Decodable {
-  let geo: Geo
-}
-
-struct Geo: Decodable {
-  let longitude: Double
-}
-
-let longitude = try JSONDecoder()
-  .decode(Response.self, from: data)
-  .address
-  .geo
-  .longitude
-
-// Prints 18.04
+// 18.04
 print(longitude)
 ```
-
-With `swift-json` it would be:
 
 ```swift
 import JSON
 
-let longitude: Double = try JSON(data)
-  .address
-  .geo
-  .longitude
+let response = """
+  {
+    "balances": [
+      {
+        "amount": 1204.36,
+        "currency": "USD"
+      },
+      {
+        "amount": 945.06,
+        "currency": "EUR"
+      }
+    ]
+  }
+  """
 
-// Prints 18.04
-print(longitude)
-```
+struct Balance {
+  let amount: Decimal
+  let currency: String
+}
 
-### More examples
+extension Balance: JSONDecodable {
 
-[See tests](https://github.com/nchlscs/swift-json/blob/main/Tests/JSONTests/JSONTests.swift)
+  init?(_ json: JSON) throws {
+    try self.init(
+      amount: json.amount,
+      currency: json.currency
+    )
+  }
+}
 
-## Installation
+let json = try JSON(response)
+let balances: [Balance] = json.balances
 
-### Swift Package Manager
-
-```swift
-.package(url: "https://github.com/nchlscs/swift-json", from: "0.3.0")
+// [Balance(amount: 1204.36, currency: "USD"), Balance(amount: 945.06, currency: "EUR")]
+print(balances)
 ```

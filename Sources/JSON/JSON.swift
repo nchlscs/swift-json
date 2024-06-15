@@ -8,17 +8,16 @@ import Foundation
 
 @dynamicCallable
 @dynamicMemberLookup
-public struct JSON {
+public struct JSON: Sendable {
 
   let result: Result<JSONValue, Error>
   let codingPath: [CodingKey]
 
-  @inline(__always)
   private func lookup(key: CodingKey) throws -> JSON {
 
     let value = try result.get()
 
-    if case let .dictionary(dictionary) = value,
+    if case let .object(dictionary) = value,
        let value = dictionary[key.stringValue] {
       return .init(result: .success(value), codingPath: codingPath + [key])
     }
@@ -38,7 +37,6 @@ public struct JSON {
     ))
   }
 
-  @inline(__always)
   private func unwrap<T: JSONDecodable>(as type: T.Type) throws -> T {
 
     if let value = try T(self) {

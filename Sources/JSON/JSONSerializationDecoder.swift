@@ -40,11 +40,11 @@ public struct JSONSerializationDecoder: JSONValueDecoder {
   private func parse(jsonObject: NSObject) throws -> JSONValue {
     switch jsonObject {
     case let dictionary as [String: NSObject]:
-      return try .dictionary(dictionary.mapValues(parse))
+      return try .object(dictionary.mapValues(parse))
     case let array as [NSObject]:
       return try .array(array.map(parse))
-    case let string as NSString:
-      return .string(string as String)
+    case let string as String:
+      return .string(string)
     case let number as NSNumber:
       if number.isBoolean {
         return .boolean(number.boolValue)

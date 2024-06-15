@@ -4,8 +4,8 @@
  MIT license
  */
 
-public enum JSONValue: Equatable {
-  case dictionary([String: JSONValue])
+public enum JSONValue: Equatable, Sendable {
+  case object([String: JSONValue])
   case array([JSONValue])
   case string(String)
   case boolean(Bool)
@@ -16,7 +16,7 @@ public enum JSONValue: Equatable {
 extension JSONValue: ExpressibleByDictionaryLiteral {
 
   public init(dictionaryLiteral elements: (String, JSONValue)...) {
-    self = .dictionary(Dictionary(uniqueKeysWithValues: elements))
+    self = .object(Dictionary(uniqueKeysWithValues: elements))
   }
 }
 
@@ -67,7 +67,7 @@ extension JSONValue: Encodable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.singleValueContainer()
     switch self {
-    case let .dictionary(dictionary):
+    case let .object(dictionary):
       try container.encode(dictionary)
     case let .array(array):
       try container.encode(array)
@@ -93,8 +93,8 @@ extension JSONValue {
 
   var underlyingType: String {
     switch self {
-    case .dictionary:
-      return "Dictionary"
+    case .object:
+      return "Object"
     case .array:
       return "Array"
     case .string:
