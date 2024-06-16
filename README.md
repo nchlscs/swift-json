@@ -19,7 +19,7 @@ let response = """
   }
   """
 
-let json = try JSON(response)
+let json = JSON(response)
 let city: String = try json.address.city
 let longitude: Double = try json.address.geo.longitude
 
@@ -63,8 +63,8 @@ extension Balance: JSONDecodable {
   }
 }
 
-let json = try JSON(response)
-let balances: [Balance] = json.balances
+let json = JSON(response)
+let balances: [Balance] = try json.balances
 
 // [Balance(amount: 1204.36, currency: "USD"), Balance(amount: 945.06, currency: "EUR")]
 print(balances)
