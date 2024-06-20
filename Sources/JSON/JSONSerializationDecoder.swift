@@ -15,7 +15,6 @@ public struct JSONSerializationDecoder: JSONValueDecoder {
     f.minimumFractionDigits = .zero
     f.decimalSeparator = "."
     f.groupingSeparator = ""
-    f.thousandSeparator = ""
     return f
   }()
 
