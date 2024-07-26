@@ -1,12 +1,6 @@
-/*
- SwiftJSON
- Nikolay Davydov
- MIT license
- */
-
 import Foundation
 
-public struct JSONSerializationDecoder: JSONValueDecoder {
+struct JSONSerializationDecoder {
 
   private let options: JSONSerialization.ReadingOptions
   private static let formatter: NumberFormatter = {
@@ -18,11 +12,11 @@ public struct JSONSerializationDecoder: JSONValueDecoder {
     return f
   }()
 
-  public init(options: JSONSerialization.ReadingOptions = []) {
+  init(options: JSONSerialization.ReadingOptions = []) {
     self.options = options
   }
 
-  public func decodeJSONValue(from data: Data) throws -> JSONValue {
+  func decodeNode(from data: Data) throws -> JSON.Node {
     let anyObject = try JSONSerialization.jsonObject(
       with: data,
       options: options
@@ -36,7 +30,7 @@ public struct JSONSerializationDecoder: JSONValueDecoder {
     return try parse(jsonObject: jsonObject)
   }
 
-  private func parse(jsonObject: NSObject) throws -> JSONValue {
+  private func parse(jsonObject: NSObject) throws -> JSON.Node {
     switch jsonObject {
     case let dictionary as [String: NSObject]:
       return try .object(dictionary.mapValues(parse))

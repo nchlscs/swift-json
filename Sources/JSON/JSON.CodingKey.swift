@@ -1,9 +1,3 @@
-/*
- SwiftJSON
- Nikolay Davydov
- MIT license
- */
-
 extension JSON {
 
   struct CodingKey: Swift.CodingKey, Equatable {

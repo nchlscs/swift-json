@@ -1,6 +1,6 @@
 # Swift JSON
 
-`swift-json` is an experimental library that leverages the [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) dynamic features of Swift providing an intuitive way to access values from JSON data.
+`swift-json` is a small library that leverages the [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) dynamic features of Swift providing an intuitive way to access values from JSON data.
 
 ## Overview
 

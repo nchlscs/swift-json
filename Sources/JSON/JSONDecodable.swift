@@ -1,9 +1,3 @@
-/*
- SwiftJSON
- Nikolay Davydov
- MIT license
- */
-
 import Foundation
 
 public protocol JSONDecodable {
@@ -12,9 +6,8 @@ public protocol JSONDecodable {
 
 public extension JSONDecodable where Self: LosslessStringConvertible {
 
-  init?(_ json: JSON) throws {
-    let value = try json.result.get()
-    switch value {
+  init?(_ json: JSON) {
+    switch json.node {
     case let .string(string), let .number(string):
       guard let result = Self(string) else {
         return nil
@@ -33,10 +26,10 @@ extension JSON: JSONDecodable {
   }
 }
 
-extension JSONValue: JSONDecodable {
+extension JSON.Node: JSONDecodable {
 
-  public init(_ json: JSON) throws {
-    self = try json.result.get()
+  public init(_ json: JSON) {
+    self = json.node
   }
 }
 
@@ -66,9 +59,8 @@ extension Double: JSONDecodable {}
 
 extension String: JSONDecodable {
 
-  public init?(_ json: JSON) throws {
-    let value = try json.result.get()
-    switch value {
+  public init?(_ json: JSON) {
+    switch json.node {
     case let .string(string):
       self = string
     default:
@@ -79,9 +71,8 @@ extension String: JSONDecodable {
 
 extension Bool: JSONDecodable {
 
-  public init?(_ json: JSON) throws {
-    let value = try json.result.get()
-    switch value {
+  public init?(_ json: JSON) {
+    switch json.node {
     case let .boolean(boolean):
       self = boolean
     case let .string(string):
@@ -97,9 +88,8 @@ extension Bool: JSONDecodable {
 
 extension Decimal: JSONDecodable {
 
-  public init?(_ json: JSON) throws {
-    let value = try json.result.get()
-    switch value {
+  public init?(_ json: JSON) {
+    switch json.node {
     case let .string(string), let .number(string):
       guard let decimal = Decimal(string: string) else {
         return nil
@@ -113,9 +103,8 @@ extension Decimal: JSONDecodable {
 
 extension URL: JSONDecodable {
 
-  public init?(_ json: JSON) throws {
-    let value = try json.result.get()
-    switch value {
+  public init?(_ json: JSON) {
+    switch json.node {
     case let .string(string):
       guard let url = URL(string: string) else {
         return nil
@@ -130,8 +119,7 @@ extension URL: JSONDecodable {
 extension Optional: JSONDecodable where Wrapped: JSONDecodable {
 
   public init?(_ json: JSON) throws {
-    let value = try json.result.get()
-    switch value {
+    switch json.node {
     case .null:
       self = .none
     default:
@@ -146,13 +134,12 @@ extension Optional: JSONDecodable where Wrapped: JSONDecodable {
 extension Array: JSONDecodable where Element: JSONDecodable {
 
   public init?(_ json: JSON) throws {
-    let value = try json.result.get()
-    switch value {
+    switch json.node {
     case let .array(array):
       var result = [Element]()
       result.reserveCapacity(array.count)
-      for value in array {
-        let json = JSON(result: .success(value), codingPath: json.codingPath)
+      for node in array {
+        let json = JSON(node: node, codingPath: json.codingPath)
         guard let element = try Element(json) else {
           return nil
         }
@@ -165,17 +152,14 @@ extension Array: JSONDecodable where Element: JSONDecodable {
   }
 }
 
-extension Dictionary: JSONDecodable
-  where Key == String,
-  Value: JSONDecodable {
+extension Dictionary: JSONDecodable where Key == String, Value: JSONDecodable {
 
   public init?(_ json: JSON) throws {
-    let value = try json.result.get()
-    switch value {
+    switch json.node {
     case let .object(dictionary):
       var result = [String: Value](minimumCapacity: dictionary.count)
-      for (key, value) in dictionary {
-        let json = JSON(result: .success(value), codingPath: json.codingPath)
+      for (key, node) in dictionary {
+        let json = JSON(node: node, codingPath: json.codingPath)
         guard let element = try Value(json) else {
           return nil
         }
