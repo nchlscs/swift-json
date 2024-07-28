@@ -1,11 +1,11 @@
-# Swift JSON
+# DynamicJSON
 
-`swift-json` is a small library that leverages the [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) dynamic features of Swift providing an intuitive way to access values from JSON data.
+A small library that leverages the [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) dynamic features of Swift providing an intuitive way to access values from JSON data.
 
 ## Overview
 
 ```swift
-import JSON
+import DynamicJSON
 
 let response = """
   {
@@ -19,7 +19,7 @@ let response = """
   }
   """
 
-let json = JSON(response)
+let json = try JSON(Data(response.utf8))
 let city: String = try json.address.city
 let longitude: Double = try json.address.geo.longitude
 
@@ -31,7 +31,7 @@ print(longitude)
 ```
 
 ```swift
-import JSON
+import DynamicJSON
 
 let response = """
   {
@@ -63,7 +63,7 @@ extension Balance: JSONDecodable {
   }
 }
 
-let json = JSON(response)
+let json = try JSON(Data(response.utf8))
 let balances: [Balance] = try json.balances
 
 // [Balance(amount: 1204.36, currency: "USD"), Balance(amount: 945.06, currency: "EUR")]

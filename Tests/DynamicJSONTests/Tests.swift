@@ -1,7 +1,7 @@
 import XCTest
-@testable import JSON
+@testable import DynamicJSON
 
-final class JSONTests: XCTestCase {
+final class Tests: XCTestCase {
 
   func testString() throws {
     let data = """
@@ -229,5 +229,13 @@ extension Balance: JSONDecodable {
       amount: json.amount,
       currency: json.currency
     )
+  }
+}
+
+private extension JSON {
+
+  init(_ string: String) throws {
+    let data = Data(string.utf8)
+    try self.init(data)
   }
 }

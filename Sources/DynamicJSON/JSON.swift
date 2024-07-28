@@ -3,34 +3,20 @@ import Foundation
 @dynamicCallable
 @dynamicMemberLookup
 public struct JSON: Equatable, Sendable {
-  let node: Node
-  let codingPath: [CodingKey]
+  let storage: Storage
 }
 
 public extension JSON {
 
-  init(
-    _ data: Data,
-    configuration: JSONConfiguration = .global
-  ) throws {
+  init(_ data: Data, configuration: Configuration = .default) throws {
     let node = try configuration.decoder(data)
-    self.init(node: node, codingPath: [])
+    let storage = Storage(node: node, configuration: configuration)
+    self.init(storage: storage)
   }
 
-  init(
-    _ string: String,
-    configuration: JSONConfiguration = .global
-  ) throws {
-    let data = Data(string.utf8)
-    try self.init(data, configuration: configuration)
-  }
-
-  init(_ node: Node) {
-    self.init(node: node, codingPath: [])
-  }
-
-  init(_ jsonConvertible: some JSONConvertible) {
-    self.init(node: jsonConvertible.jsonNode, codingPath: [])
+  init(_ node: Node, configuration: Configuration = .default) {
+    let storage = Storage(node: node, configuration: configuration)
+    self.init(storage: storage)
   }
 
   subscript(dynamicMember key: String) -> JSON {
@@ -76,32 +62,28 @@ public extension JSON {
   }
 }
 
-extension JSON: CustomStringConvertible {
-
-  public var description: String {
-    node.description
-  }
-}
-
 private extension JSON {
 
   func lookup(key: CodingKey) throws -> JSON {
-    if case let .object(dictionary) = node,
+    if case let .object(dictionary) = storage.node,
        let node = dictionary[key.stringValue] {
-      return .init(node: node, codingPath: codingPath + [key])
+      var storage = self.storage
+      storage.node = node
+      storage.codingPath += [key]
+      return .init(storage: storage)
     }
 
-    if case let .array(array) = node,
+    if case let .array(array) = storage.node,
        let index = key.intValue,
        array.indices.contains(index) {
-      return .init(
-        node: array[index],
-        codingPath: codingPath + [key]
-      )
+      var storage = self.storage
+      storage.node = array[index]
+      storage.codingPath += [key]
+      return .init(storage: storage)
     }
 
     throw DecodingError.keyNotFound(key, .init(
-      codingPath: codingPath,
+      codingPath: storage.codingPath,
       debugDescription: "No value associated with key '\(key)'."
     ))
   }
@@ -111,10 +93,10 @@ private extension JSON {
       return value
     }
 
-    let underlyingType = node.underlyingType
+    let underlyingType = storage.node.underlyingType
 
     throw DecodingError.typeMismatch(T.self, .init(
-      codingPath: codingPath,
+      codingPath: storage.codingPath,
       debugDescription: "Expected \(T.self) value but found \(underlyingType) instead."
     ))
   }

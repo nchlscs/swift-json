@@ -61,18 +61,12 @@ extension JSON.Node {
 
   var underlyingType: String {
     switch self {
-    case .object:
-      return "Object"
-    case .array:
-      return "Array"
-    case .string:
-      return "String"
-    case .boolean:
-      return "Boolean"
-    case .number:
-      return "Number"
-    case .null:
-      return "Null"
+    case .object: "Object"
+    case .array: "Array"
+    case .string: "String"
+    case .boolean: "Boolean"
+    case .number: "Number"
+    case .null: "Null"
     }
   }
 }
