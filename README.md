@@ -1,11 +1,19 @@
-# DynamicJSON
+# JSON
 
-A small library that leverages the [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) dynamic features of Swift providing an intuitive way to access values from JSON data.
+A small and customizable library that leverages Swift's dynamic features to provide an intuitive way to manipulate JSON data.
 
-## Overview
+## Implemenation
+
+`JSON` is an abstraction on `JSONParser`, [an internal parser from Swift's Foundation](https://github.com/swiftlang/swift-corelibs-foundation/blob/main/Sources/Foundation/JSONSerialization%2BParser.swift), which powers `JSONSerialization`. It utilies [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) features to access values from JSON data.
+
+## Licensing
+
+The project itself is under MIT Licence, but it includes the implementation of `JSONParser` from Swift's Foundation, which is licensed under the Apache License, Version 2.0.
+
+## Examples
 
 ```swift
-import DynamicJSON
+import JSON
 
 let response = """
   {
@@ -19,7 +27,7 @@ let response = """
   }
   """
 
-let json = try JSON(Data(response.utf8))
+let json = try JSON(response.utf8)
 let city: String = try json.address.city
 let longitude: Double = try json.address.geo.longitude
 
@@ -31,7 +39,7 @@ print(longitude)
 ```
 
 ```swift
-import DynamicJSON
+import JSON
 
 let response = """
   {
@@ -63,7 +71,7 @@ extension Balance: JSONDecodable {
   }
 }
 
-let json = try JSON(Data(response.utf8))
+let json = try JSON(response.utf8)
 let balances: [Balance] = try json.balances
 
 // [Balance(amount: 1204.36, currency: "USD"), Balance(amount: 945.06, currency: "EUR")]

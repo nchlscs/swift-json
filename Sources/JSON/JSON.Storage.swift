@@ -3,7 +3,7 @@ extension JSON {
   struct Storage: Sendable {
     var node: Node
     var codingPath: [CodingKey] = []
-    var configuration: Configuration = .default
+    var configuration: Configuration = .defaultConfiguration
   }
 }
 

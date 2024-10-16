@@ -1,22 +1,5 @@
-import Foundation
-
 public protocol JSONDecodable {
   init?(_ json: JSON) throws
-}
-
-public extension JSONDecodable where Self: LosslessStringConvertible {
-
-  init?(_ json: JSON) {
-    switch JSON.Node(json) {
-    case let .string(string), let .number(string):
-      guard let result = Self(string) else {
-        return nil
-      }
-      self = result
-    default:
-      return nil
-    }
-  }
 }
 
 extension JSON: JSONDecodable {
@@ -26,10 +9,37 @@ extension JSON: JSONDecodable {
   }
 }
 
-extension JSON.Node: JSONDecodable {
+extension String: JSONDecodable {
 
-  public init(_ json: JSON) {
-    self = json.storage.node
+  public init?(_ json: JSON) throws {
+    let decoder = json.storage.configuration.stringDecoder
+    guard let string = try decoder(json) else {
+      return nil
+    }
+    self = string
+  }
+}
+
+extension Bool: JSONDecodable {
+
+  public init?(_ json: JSON) throws {
+    let decoder = json.storage.configuration.boolDecoder
+    guard let bool = try decoder(json) else {
+      return nil
+    }
+    self = bool
+  }
+}
+
+public extension JSONDecodable
+where Self: Numeric, Self: LosslessStringConvertible {
+
+  init?(_ json: JSON) throws {
+    let decoder = json.storage.configuration.numberDecoder
+    guard let string = try decoder(json), let number = Self(string) else {
+      return nil
+    }
+    self = number
   }
 }
 
@@ -56,58 +66,6 @@ extension UInt64: JSONDecodable {}
 extension Float: JSONDecodable {}
 
 extension Double: JSONDecodable {}
-
-extension String: JSONDecodable {
-
-  public init?(_ json: JSON) throws {
-    let decoder = json.storage.configuration.stringDecoder
-    guard let string = try decoder(json) else {
-      return nil
-    }
-    self = string
-  }
-}
-
-extension Bool: JSONDecodable {
-
-  public init?(_ json: JSON) throws {
-    let decoder = json.storage.configuration.booleanDecoder
-    guard let boolean = try decoder(json) else {
-      return nil
-    }
-    self = boolean
-  }
-}
-
-extension Decimal: JSONDecodable {
-
-  public init?(_ json: JSON) {
-    switch JSON.Node(json) {
-    case let .string(string), let .number(string):
-      guard let decimal = Decimal(string: string) else {
-        return nil
-      }
-      self = decimal
-    default:
-      return nil
-    }
-  }
-}
-
-extension URL: JSONDecodable {
-
-  public init?(_ json: JSON) {
-    switch JSON.Node(json) {
-    case let .string(string):
-      guard let url = URL(string: string) else {
-        return nil
-      }
-      self = url
-    default:
-      return nil
-    }
-  }
-}
 
 extension Optional: JSONDecodable where Wrapped: JSONDecodable {
 
@@ -168,3 +126,37 @@ extension Dictionary: JSONDecodable where Key == String, Value: JSONDecodable {
     }
   }
 }
+
+#if canImport(Foundation)
+import Foundation
+
+extension Decimal: JSONDecodable {
+
+  public init?(_ json: JSON) {
+    switch JSON.Node(json) {
+    case let .string(string), let .number(string):
+      guard let decimal = Decimal(string: string) else {
+        return nil
+      }
+      self = decimal
+    default:
+      return nil
+    }
+  }
+}
+
+extension URL: JSONDecodable {
+
+  public init?(_ json: JSON) {
+    switch JSON.Node(json) {
+    case let .string(string):
+      guard let url = URL(string: string) else {
+        return nil
+      }
+      self = url
+    default:
+      return nil
+    }
+  }
+}
+#endif

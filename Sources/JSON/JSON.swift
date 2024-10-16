@@ -1,5 +1,3 @@
-import Foundation
-
 @dynamicCallable
 @dynamicMemberLookup
 public struct JSON: Equatable, Sendable {
@@ -8,13 +6,17 @@ public struct JSON: Equatable, Sendable {
 
 public extension JSON {
 
-  init(_ data: Data, configuration: Configuration = .default) throws {
-    let node = try configuration.decoder(data)
+  init(
+    _ data: some Collection<UInt8>,
+    configuration: Configuration = .defaultConfiguration
+  ) throws {
+    var parser = JSONParser(bytes: Array(data))
+    let node = try parser.parse()
     let storage = Storage(node: node, configuration: configuration)
     self.init(storage: storage)
   }
 
-  init(_ node: Node, configuration: Configuration = .default) {
+  init(_ node: Node, configuration: Configuration = .defaultConfiguration) {
     let storage = Storage(node: node, configuration: configuration)
     self.init(storage: storage)
   }
@@ -66,7 +68,8 @@ private extension JSON {
 
   func lookup(key: CodingKey) throws -> JSON {
     if case let .object(dictionary) = storage.node,
-       let node = dictionary[key.stringValue] {
+      let node = dictionary[key.stringValue]
+    {
       var storage = self.storage
       storage.node = node
       storage.codingPath += [key]
@@ -74,18 +77,22 @@ private extension JSON {
     }
 
     if case let .array(array) = storage.node,
-       let index = key.intValue,
-       array.indices.contains(index) {
+      let index = key.intValue,
+      array.indices.contains(index)
+    {
       var storage = self.storage
       storage.node = array[index]
       storage.codingPath += [key]
       return .init(storage: storage)
     }
 
-    throw DecodingError.keyNotFound(key, .init(
-      codingPath: storage.codingPath,
-      debugDescription: "No value associated with key '\(key)'."
-    ))
+    throw DecodingError.keyNotFound(
+      key,
+      .init(
+        codingPath: storage.codingPath,
+        debugDescription: "No value associated with key '\(key)'."
+      )
+    )
   }
 
   func unwrap<T: JSONDecodable>(as type: T.Type) throws -> T {
@@ -95,9 +102,13 @@ private extension JSON {
 
     let underlyingType = storage.node.underlyingType
 
-    throw DecodingError.typeMismatch(T.self, .init(
-      codingPath: storage.codingPath,
-      debugDescription: "Expected \(T.self) value but found \(underlyingType) instead."
-    ))
+    throw DecodingError.typeMismatch(
+      T.self,
+      .init(
+        codingPath: storage.codingPath,
+        debugDescription:
+          "Expected \(T.self) value but found \(underlyingType) instead."
+      )
+    )
   }
 }

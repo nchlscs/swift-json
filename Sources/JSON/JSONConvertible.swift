@@ -1,5 +1,3 @@
-import Foundation
-
 public protocol JSONConvertible {
   var json: JSON { get }
   var jsonNode: JSON.Node { get }
@@ -66,15 +64,7 @@ extension String: JSONConvertible {
 }
 
 extension Bool: JSONConvertible {
-  public var jsonNode: JSON.Node { .boolean(self) }
-}
-
-extension Decimal: JSONConvertible {
-  public var jsonNode: JSON.Node { .number(description) }
-}
-
-extension URL: JSONConvertible {
-  public var jsonNode: JSON.Node { .string(absoluteString) }
+  public var jsonNode: JSON.Node { .bool(self) }
 }
 
 extension Optional: JSONConvertible where Wrapped: JSONConvertible {
@@ -88,3 +78,15 @@ extension [any JSONConvertible]: JSONConvertible {
 extension [String: any JSONConvertible]: JSONConvertible {
   public var jsonNode: JSON.Node { .object(mapValues(\.jsonNode)) }
 }
+
+#if canImport(Foundation)
+import Foundation
+
+extension Decimal: JSONConvertible {
+  public var jsonNode: JSON.Node { .number(description) }
+}
+
+extension URL: JSONConvertible {
+  public var jsonNode: JSON.Node { .string(absoluteString) }
+}
+#endif

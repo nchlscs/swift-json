@@ -11,7 +11,7 @@ extension JSON {
     }
 
     init(intValue: Int) {
-      self.stringValue = "Index \(intValue)"
+      self.stringValue = intValue.description
       self.intValue = intValue
     }
 
