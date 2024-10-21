@@ -1,4 +1,3 @@
-@dynamicCallable
 @dynamicMemberLookup
 public struct JSON: Equatable, Sendable {
   let storage: Storage
@@ -6,19 +5,25 @@ public struct JSON: Equatable, Sendable {
 
 public extension JSON {
 
+  init(_ node: Node, configuration: Configuration = .defaultConfiguration) {
+    let storage = Storage(node: node, configuration: configuration)
+    self.init(storage: storage)
+  }
+
   init(
     _ data: some Collection<UInt8>,
     configuration: Configuration = .defaultConfiguration
   ) throws {
     var parser = JSONParser(bytes: Array(data))
     let node = try parser.parse()
-    let storage = Storage(node: node, configuration: configuration)
-    self.init(storage: storage)
+    self.init(node, configuration: configuration)
   }
 
-  init(_ node: Node, configuration: Configuration = .defaultConfiguration) {
-    let storage = Storage(node: node, configuration: configuration)
-    self.init(storage: storage)
+  init(
+    _ jsonConvertible: some JSONConvertible,
+    configuration: Configuration = .defaultConfiguration
+  ) {
+    self.init(jsonConvertible.jsonNode, configuration: configuration)
   }
 
   subscript(dynamicMember key: String) -> JSON {
@@ -55,12 +60,6 @@ public extension JSON {
     get throws {
       try lookup(key: .init(intValue: index)).unwrap(as: T.self)
     }
-  }
-
-  func dynamicallyCall<T: JSONDecodable>(
-    withArguments arguments: [T.Type] = [T.self]
-  ) throws -> T {
-    try unwrap(as: T.self)
   }
 }
 

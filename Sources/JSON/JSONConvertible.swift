@@ -1,10 +1,5 @@
 public protocol JSONConvertible {
-  var json: JSON { get }
   var jsonNode: JSON.Node { get }
-}
-
-public extension JSONConvertible {
-  var json: JSON { JSON(jsonNode) }
 }
 
 extension JSON.Node: JSONConvertible {

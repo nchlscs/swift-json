@@ -4,7 +4,7 @@ A small and customizable library that leverages Swift's dynamic features to prov
 
 ## Implemenation
 
-`JSON` is an abstraction on `JSONParser`, [an internal parser from Swift's Foundation](https://github.com/swiftlang/swift-corelibs-foundation/blob/main/Sources/Foundation/JSONSerialization%2BParser.swift), which powers `JSONSerialization`. It utilies [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) and [`@dynamicCallable`](https://github.com/apple/swift-evolution/blob/main/proposals/0216-dynamic-callable.md) features to access values from JSON data.
+`JSON` is an abstraction on `JSONParser`, [an internal parser from Swift's Foundation](https://github.com/swiftlang/swift-corelibs-foundation/blob/main/Sources/Foundation/JSONSerialization%2BParser.swift), which powers `JSONSerialization`. It utilies [`@dynamicMemberLookup`](https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md) feature to access values from JSON data.
 
 ## Licensing
 
