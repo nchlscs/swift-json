@@ -1,7 +1,7 @@
 extension JSON {
 
   struct Storage: Sendable {
-    var node: Node
+    var result: Result<Node, Error>
     var codingPath: [CodingKey] = []
     var configuration: Configuration = .defaultConfiguration
   }
@@ -10,13 +10,18 @@ extension JSON {
 extension JSON.Storage: Equatable {
 
   static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.node == rhs.node && lhs.codingPath == rhs.codingPath
+    lhs.result == rhs.result && lhs.codingPath == rhs.codingPath
   }
 }
 
 extension JSON.Storage: CustomStringConvertible {
 
   var description: String {
-    "\(node.description), codingPath: \(codingPath.description)"
+    switch result {
+    case let .success(node):
+      "\(node.description), codingPath: \(codingPath.description)"
+    case let .failure(error):
+      "\(error), codingPath: \(codingPath.description)"
+    }
   }
 }

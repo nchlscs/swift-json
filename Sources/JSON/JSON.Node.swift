@@ -12,18 +12,22 @@ public extension JSON {
 
 public extension JSON.Node {
 
-  init(_ json: JSON) {
-    self = json.storage.node
+  init(_ json: JSON) throws {
+    self = try json.storage.result.get()
   }
 
-  init(_ json: [JSON]) {
-    self = .array(json.map(\.storage.node))
+  init(_ json: [JSON]) throws {
+    self = try .array(json.map { try $0.storage.result.get() })
   }
 
   init(
     _ jsonConvertible: some JSONConvertible
   ) {
     self = jsonConvertible.jsonNode
+  }
+
+  var string: String {
+    Self.description(self, level: 0, pretty: false)
   }
 }
 
@@ -59,7 +63,7 @@ extension JSON.Node: Encodable {
 extension JSON.Node: CustomStringConvertible {
 
   public var description: String {
-    Self.description(self, level: 0)
+    Self.description(self, level: 0, pretty: true)
   }
 }
 
@@ -79,10 +83,12 @@ extension JSON.Node {
 
 private extension JSON.Node {
 
-  static func description(_ node: Self, level: Int) -> String {
+  static func description(_ node: Self, level: Int, pretty: Bool) -> String {
     switch node {
-    case let .object(value): objectDescription(value, level: level)
-    case let .array(value): arrayDescription(value, level: level)
+    case let .object(value):
+      objectDescription(value, level: level, pretty: pretty)
+    case let .array(value):
+      arrayDescription(value, level: level, pretty: pretty)
     case let .string(value): stringDescription(value)
     case let .bool(value): value.description
     case let .number(value): value
@@ -92,39 +98,42 @@ private extension JSON.Node {
 
   static func objectDescription(
     _ object: [String: Self],
-    level: Int
+    level: Int,
+    pretty: Bool
   ) -> String {
+    let separator = pretty ? "\n" : ""
     let description = object.sorted(by: { $0.key < $1.key })
       .map { key, value in
         let level = level + 1
-        let key = stringDescription(key)
-        let value = Self.description(value, level: level)
-        return "\(Self.indentation(level: level))\(key): \(value)"
+        let key = Self.stringDescription(key)
+        let value = Self.description(value, level: level, pretty: pretty)
+        let indentation = pretty ? Self.indentation(level: level) : ""
+        let space = pretty ? " " : ""
+        return "\(indentation)\(key):\(space)\(value)"
       }
-      .joined(separator: ",\n")
-    return """
-      {
-      \(description)
-      \(Self.indentation(level: level))}
-      """
+      .joined(separator: ",\(separator)")
+    let indentation = pretty ? Self.indentation(level: level) : ""
+    return ["{", description, indentation + "}"]
+      .joined(separator: separator)
   }
 
   static func arrayDescription(
     _ array: [Self],
-    level: Int
+    level: Int,
+    pretty: Bool
   ) -> String {
+    let separator = pretty ? "\n" : ""
     let description =
       array.map { value in
         let level = level + 1
-        let value = Self.description(value, level: level)
-        return "\(Self.indentation(level: level))\(value)"
+        let value = Self.description(value, level: level, pretty: pretty)
+        let indentation = pretty ? Self.indentation(level: level) : ""
+        return "\(indentation)\(value)"
       }
-      .joined(separator: ",\n")
-    return """
-      [
-      \(description)
-      \(Self.indentation(level: level))]
-      """
+      .joined(separator: ",\(separator)")
+    let indentation = pretty ? Self.indentation(level: level) : ""
+    return ["[", description, indentation + "]"]
+      .joined(separator: separator)
   }
 
   static func indentation(level: Int) -> String {

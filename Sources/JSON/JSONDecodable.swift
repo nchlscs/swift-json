@@ -70,7 +70,7 @@ extension Double: JSONDecodable {}
 extension Optional: JSONDecodable where Wrapped: JSONDecodable {
 
   public init?(_ json: JSON) throws {
-    switch JSON.Node(json) {
+    switch try JSON.Node(json) {
     case .null:
       self = .none
     default:
@@ -85,13 +85,13 @@ extension Optional: JSONDecodable where Wrapped: JSONDecodable {
 extension Array: JSONDecodable where Element: JSONDecodable {
 
   public init?(_ json: JSON) throws {
-    switch JSON.Node(json) {
+    switch try JSON.Node(json) {
     case let .array(array):
       var result = [Element]()
       result.reserveCapacity(array.count)
       for node in array {
         var storage = json.storage
-        storage.node = node
+        storage.result = .success(node)
         let json = JSON(storage: storage)
         guard let element = try Element(json) else {
           return nil
@@ -108,12 +108,12 @@ extension Array: JSONDecodable where Element: JSONDecodable {
 extension Dictionary: JSONDecodable where Key == String, Value: JSONDecodable {
 
   public init?(_ json: JSON) throws {
-    switch JSON.Node(json) {
+    switch try JSON.Node(json) {
     case let .object(dictionary):
       var result = [String: Value](minimumCapacity: dictionary.count)
       for (key, node) in dictionary {
         var storage = json.storage
-        storage.node = node
+        storage.result = .success(node)
         let json = JSON(storage: storage)
         guard let element = try Value(json) else {
           return nil
@@ -132,8 +132,8 @@ import Foundation
 
 extension Decimal: JSONDecodable {
 
-  public init?(_ json: JSON) {
-    switch JSON.Node(json) {
+  public init?(_ json: JSON) throws {
+    switch try JSON.Node(json) {
     case let .string(string), let .number(string):
       guard let decimal = Decimal(string: string) else {
         return nil
@@ -147,8 +147,8 @@ extension Decimal: JSONDecodable {
 
 extension URL: JSONDecodable {
 
-  public init?(_ json: JSON) {
-    switch JSON.Node(json) {
+  public init?(_ json: JSON) throws {
+    switch try JSON.Node(json) {
     case let .string(string):
       guard let url = URL(string: string) else {
         return nil
