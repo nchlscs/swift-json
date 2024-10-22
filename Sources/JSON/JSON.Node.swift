@@ -12,12 +12,12 @@ public extension JSON {
 
 public extension JSON.Node {
 
-  init(_ json: JSON) {
-    self = json.storage.node
+  init(_ json: JSON) throws {
+    self = try json.storage.result.get()
   }
 
-  init(_ json: [JSON]) {
-    self = .array(json.map(\.storage.node))
+  init(_ json: [JSON]) throws {
+    self = try .array(json.map { try $0.storage.result.get() })
   }
 }
 
