@@ -238,6 +238,44 @@ import Foundation
 }
 #endif
 
+@Test func testJSONUnwrap() async throws {
+  let data = """
+    {
+      "amount": 945.06,
+      "currency": "USD",
+    }
+    """
+  let json = try JSON(data.utf8)
+
+  let balance = try JSON.unwrap(json, as: Balance.self)
+  #expect(
+    balance == Balance(amount: Decimal(string: "945.06")!, currency: .USD)
+  )
+}
+
+private struct Balance: Equatable {
+  let amount: Decimal
+  let currency: Currency
+}
+
+extension Balance: JSONDecodable {
+
+  init?(_ json: JSON) throws {
+    try self.init(amount: json.amount, currency: json.currency)
+  }
+}
+
+private enum Currency: String {
+  case USD
+}
+
+extension Currency: JSONDecodable {
+
+  init?(_ json: JSON) throws {
+    try self.init(rawValue: JSON.unwrap(json, as: String.self))
+  }
+}
+
 private extension DecodingError.Context {
 
   func isCodingPathEqual(

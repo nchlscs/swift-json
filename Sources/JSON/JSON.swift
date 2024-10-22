@@ -61,6 +61,13 @@ public extension JSON {
       try lookup(key: .init(intValue: index)).unwrap(as: T.self)
     }
   }
+
+  static func unwrap<T: JSONDecodable>(
+    _ json: JSON,
+    as type: T.Type
+  ) throws -> T {
+    try json.unwrap(as: type)
+  }
 }
 
 private extension JSON {
