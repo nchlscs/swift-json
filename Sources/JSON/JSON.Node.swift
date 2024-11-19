@@ -19,6 +19,12 @@ public extension JSON.Node {
   init(_ json: [JSON]) {
     self = .array(json.map(\.storage.node))
   }
+
+  init(
+    _ jsonConvertible: some JSONConvertible
+  ) {
+    self = jsonConvertible.jsonNode
+  }
 }
 
 extension JSON.Node: Encodable {

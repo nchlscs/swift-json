@@ -11,7 +11,7 @@ let package = Package(
     .library(name: "JSON", targets: ["JSON"])
   ],
   targets: [
-    .target(name: "JSON", exclude: ["JSONParser/LICENSE.TXT"]),
+    .target(name: "JSON", exclude: ["JSONParser/LICENSE.txt"]),
     .testTarget(name: "JSONTests", dependencies: ["JSON"]),
   ],
   swiftLanguageModes: [.v6]
