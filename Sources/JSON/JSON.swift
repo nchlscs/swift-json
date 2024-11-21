@@ -1,6 +1,6 @@
 @dynamicMemberLookup
 public struct JSON: Equatable, Sendable {
-  let storage: Storage
+  var storage: Storage
 }
 
 public extension JSON {
@@ -67,6 +67,19 @@ public extension JSON {
     as type: T.Type
   ) throws -> T {
     try json.unwrap(as: type)
+  }
+
+  static func mutate(_ json: inout JSON, body: (inout Setter) -> Void) {
+    var setter = Setter(node: json.storage.node)
+    body(&setter)
+    json.storage.node = setter.node
+  }
+
+  static func map<T: JSONDecodable>(
+    _ json: JSON,
+    transform: (JSON) throws -> T
+  ) throws -> [T] {
+    try json.unwrap(as: [JSON].self).map(transform)
   }
 }
 
