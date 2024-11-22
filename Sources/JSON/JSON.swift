@@ -75,11 +75,25 @@ public extension JSON {
     json.storage.node = setter.node
   }
 
-  static func map<T: JSONDecodable>(
+  static func map<T>(
     _ json: JSON,
     transform: (JSON) throws -> T
   ) throws -> [T] {
     try json.unwrap(as: [JSON].self).map(transform)
+  }
+
+  static func compactMap<T>(
+    _ json: JSON,
+    transform: (JSON) throws -> T?
+  ) throws -> [T] {
+    try json.unwrap(as: [JSON].self).compactMap(transform)
+  }
+
+  static func filter(
+    _ json: JSON,
+    isIncluded: (JSON) throws -> Bool
+  ) throws -> [JSON] {
+    try json.unwrap(as: [JSON].self).filter(isIncluded)
   }
 }
 
