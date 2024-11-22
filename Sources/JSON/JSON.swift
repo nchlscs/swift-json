@@ -69,10 +69,13 @@ public extension JSON {
     try json.unwrap(as: type)
   }
 
-  static func mutate(_ json: inout JSON, body: (inout Setter) -> Void) {
-    var setter = Setter(node: json.storage.node)
-    body(&setter)
-    json.storage.node = setter.node
+  static func mutate(
+    _ json: inout JSON,
+    body: (inout Setter) throws -> Void
+  ) rethrows {
+    var setter = Setter(json: json)
+    try body(&setter)
+    json = setter.json
   }
 
   static func map<T>(

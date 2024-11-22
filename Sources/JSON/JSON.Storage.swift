@@ -10,7 +10,7 @@ extension JSON {
 extension JSON.Storage: Equatable {
 
   static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.node == rhs.node && lhs.codingPath == rhs.codingPath
+    lhs.node == rhs.node
   }
 }
 
