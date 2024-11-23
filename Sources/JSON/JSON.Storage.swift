@@ -1,4 +1,4 @@
-extension JSON {
+ extension JSON {
 
   struct Storage: Sendable {
     var result: Result<Node, Error>
@@ -10,7 +10,7 @@ extension JSON {
 extension JSON.Storage: Equatable {
 
   static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.result == rhs.result && lhs.codingPath == rhs.codingPath
+    lhs.node == rhs.node
   }
 }
 

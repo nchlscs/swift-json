@@ -96,11 +96,41 @@ public extension JSON {
     try json.unwrap(as: type)
   }
 
-  static func string(_ json: JSON) -> String {
-    switch json.storage.result {
-    case let .success(node): node.description
-    case let .failure(error): error.description
-    }
+  static func withMutableStorage(
+    of json: inout JSON,
+    body: (inout Setter) throws -> Void
+  ) rethrows {
+    var setter = Setter(json: json)
+    try body(&setter)
+    json.storage.node = setter.json.storage.node
+  }
+
+  static func map<T>(
+    _ json: JSON,
+    transform: (JSON) throws -> T
+  ) throws -> [T] {
+    try json.unwrap(as: [JSON].self).map(transform)
+  }
+
+  static func compactMap<T>(
+    _ json: JSON,
+    transform: (JSON) throws -> T?
+  ) throws -> [T] {
+    try json.unwrap(as: [JSON].self).compactMap(transform)
+  }
+
+  static func filter(
+    _ json: JSON,
+    isIncluded: (JSON) throws -> Bool
+  ) throws -> [JSON] {
+    try json.unwrap(as: [JSON].self).filter(isIncluded)
+  }
+
+  static func forEach(
+    _ json: JSON,
+    body: (JSON) throws -> Void
+  ) throws {
+    try json.unwrap(as: [JSON].self).forEach(body)
   }
 }
 
