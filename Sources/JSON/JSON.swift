@@ -96,15 +96,6 @@ public extension JSON {
     try json.unwrap(as: type)
   }
 
-  static func withMutableStorage(
-    of json: inout JSON,
-    body: (inout Setter) throws -> Void
-  ) rethrows {
-    var setter = Setter(json: json)
-    try body(&setter)
-    json.storage.node = setter.json.storage.node
-  }
-
   static func map<T>(
     _ json: JSON,
     transform: (JSON) throws -> T

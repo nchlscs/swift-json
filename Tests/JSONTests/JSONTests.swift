@@ -21,7 +21,7 @@ import Testing
   json.balances[0].amount = 1000
   json.balances[2] = ["amount": 500, "currency": "USD"]
   json.isBlocked = false
-  print(JSON.string(json))
+  print(json)
 }
 
 @Test func testJSONDecoding() throws {
