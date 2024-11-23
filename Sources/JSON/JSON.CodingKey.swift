@@ -1,18 +1,29 @@
 extension JSON {
 
-  struct CodingKey: Swift.CodingKey, Equatable {
+  enum CodingKey: Swift.CodingKey, Equatable {
+    case string(String)
+    case int(Int)
 
-    let stringValue: String
-    let intValue: Int?
+    var stringValue: String {
+      switch self {
+      case let .string(value): value
+      case let .int(value): String(value)
+      }
+    }
+
+    var intValue: Int? {
+      switch self {
+      case .string: nil
+      case let .int(value): value
+      }
+    }
 
     init(stringValue: String) {
-      self.stringValue = stringValue
-      self.intValue = nil
+      self = .string(stringValue)
     }
 
     init(intValue: Int) {
-      self.stringValue = intValue.description
-      self.intValue = intValue
+      self = .int(intValue)
     }
 
     var description: String {
