@@ -69,13 +69,13 @@ public extension JSON {
     try json.unwrap(as: type)
   }
 
-  static func mutate(
-    _ json: inout JSON,
+  static func withMutableStorage(
+    of json: inout JSON,
     body: (inout Setter) throws -> Void
   ) rethrows {
     var setter = Setter(json: json)
     try body(&setter)
-    json = setter.json
+    json.storage.node = setter.json.storage.node
   }
 
   static func map<T>(
@@ -97,6 +97,13 @@ public extension JSON {
     isIncluded: (JSON) throws -> Bool
   ) throws -> [JSON] {
     try json.unwrap(as: [JSON].self).filter(isIncluded)
+  }
+
+  static func forEach(
+    _ json: JSON,
+    body: (JSON) throws -> Void
+  ) throws {
+    try json.unwrap(as: [JSON].self).forEach(body)
   }
 }
 

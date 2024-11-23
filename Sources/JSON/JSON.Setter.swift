@@ -50,38 +50,6 @@ public extension JSON.Setter {
     set { update(value: newValue.jsonNode, for: .init(intValue: index)) }
   }
 
-  subscript(dynamicMember key: String) -> JSON {
-    get {
-      do {
-        return try json[key]
-      }
-      catch {
-        var json = json
-        json.storage.node = .array([])
-        return json
-      }
-    }
-    set {
-      update(value: newValue.storage.node, for: .init(stringValue: key))
-    }
-  }
-
-  subscript(index: Int) -> JSON {
-    get {
-      do {
-        return try json[index]
-      }
-      catch {
-        var json = json
-        json.storage.node = .object([:])
-        return json
-      }
-    }
-    set {
-      update(value: newValue.storage.node, for: .init(intValue: index))
-    }
-  }
-
   subscript<T: JSONDecodable>(dynamicMember key: String) -> T {
     get throws { try json[key] }
   }
@@ -93,7 +61,6 @@ public extension JSON.Setter {
   subscript<T: JSONDecodable>(index: Int) -> T {
     get throws { try json[index] }
   }
-
 }
 
 private extension JSON.Setter {
